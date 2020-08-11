@@ -42,6 +42,10 @@ using namespace std;
 
 FixSMDIntegrateTlsph::FixSMDIntegrateTlsph(LAMMPS *lmp, int narg, char **arg) :
                 Fix(lmp, narg, arg) {
+					
+		/*$$$$$*/
+		//printf("\n\n\n**************************************\nCALLING : FixSMDIntegrateTlsph  - CONSTRUCTOR\n**************************************\n\n\n");
+
         if (narg < 3) {
                 printf("narg=%d\n", narg);
                 error->all(FLERR, "Illegal fix smd/integrate_tlsph command");
@@ -53,7 +57,9 @@ FixSMDIntegrateTlsph::FixSMDIntegrateTlsph(LAMMPS *lmp, int narg, char **arg) :
 
         if (comm->me == 0) {
                 printf("\n>>========>>========>>========>>========>>========>>========>>========>>========\n");
-                printf("fix smd/integrate_tlsph is active for group: %s \n", arg[1]);
+                printf("fix smd/integrate_tlsph is active for group: %s \n", arg[1]);		
+				
+
         }
 
         while (true) {
@@ -102,6 +108,10 @@ FixSMDIntegrateTlsph::FixSMDIntegrateTlsph(LAMMPS *lmp, int narg, char **arg) :
 /* ---------------------------------------------------------------------- */
 
 int FixSMDIntegrateTlsph::setmask() {
+		
+		/*$$$$$*/
+		//printf("\n**************************************\nCALLING : setmask()\n**************************************\n");
+        
         int mask = 0;
         mask |= INITIAL_INTEGRATE;
         mask |= FINAL_INTEGRATE;
@@ -111,7 +121,11 @@ int FixSMDIntegrateTlsph::setmask() {
 /* ---------------------------------------------------------------------- */
 
 void FixSMDIntegrateTlsph::init() {
-        dtv = update->dt;
+		
+		/*$$$$$*/
+		//printf("\n**************************************\nCALLING : init()\n**************************************\n");
+        
+		dtv = update->dt;
         dtf = 0.5 * update->dt * force->ftm2v;
         vlimitsq = vlimit * vlimit;
 }
@@ -121,6 +135,9 @@ void FixSMDIntegrateTlsph::init() {
 
 void FixSMDIntegrateTlsph::initial_integrate(int /*vflag*/) {
         double dtfm, vsq, scale;
+
+		/*$$$$$*/
+		//printf("\n**************************************\nCALLING : initial_integrate\n**************************************\n");
 
         // update v and x of atoms in group
 
@@ -149,6 +166,7 @@ void FixSMDIntegrateTlsph::initial_integrate(int /*vflag*/) {
                 if (mask[i] & groupbit) {
                         dtfm = dtf / rmass[i];
 
+							
                         // 1st part of Velocity_Verlet: push velocties 1/2 time increment ahead
                         v[i][0] += dtfm * f[i][0];
                         v[i][1] += dtfm * f[i][1];
@@ -165,7 +183,12 @@ void FixSMDIntegrateTlsph::initial_integrate(int /*vflag*/) {
                         }
 
                         if (xsphFlag) {
-
+							
+							/*$$$$$*/
+							if(i==0)
+							printf("\n**************************************\nXSPH ACTIVE\n**************************************\n");
+        
+									
                                 // construct XSPH velocity
                                 vxsph_x = v[i][0] + 0.5 * smoothVelDifference[i](0);
                                 vxsph_y = v[i][1] + 0.5 * smoothVelDifference[i](1);
@@ -184,7 +207,9 @@ void FixSMDIntegrateTlsph::initial_integrate(int /*vflag*/) {
                                 vest[i][0] = v[i][0] + dtfm * f[i][0];
                                 vest[i][1] = v[i][1] + dtfm * f[i][1];
                                 vest[i][2] = v[i][2] + dtfm * f[i][2];
-
+								/*$$$$$*/
+								//printf("\nFORCES\n%lf\t%lf\t%lf\n",f[i][0],f[i][1],f[i][2]);
+	
                                 x[i][0] += dtv * v[i][0]; // 2nd part of Velocity-Verlet: push positions one full time increment ahead
                                 x[i][1] += dtv * v[i][1];
                                 x[i][2] += dtv * v[i][2];
@@ -199,6 +224,10 @@ void FixSMDIntegrateTlsph::initial_integrate(int /*vflag*/) {
 void FixSMDIntegrateTlsph::final_integrate() {
         double dtfm, vsq, scale;
 
+		/*$$$$$*/
+		//
+		//printf("\n**************************************\nCALLING : final_integrate\n**************************************\n");
+		
 // update v of atoms in group
 
         double **v = atom->v;
@@ -239,6 +268,10 @@ void FixSMDIntegrateTlsph::final_integrate() {
 /* ---------------------------------------------------------------------- */
 
 void FixSMDIntegrateTlsph::reset_dt() {
+		
+		/*$$$$$*/
+		//printf("\n**************************************\nCALLING : reset_dt\n**************************************\n");
+	
         dtv = update->dt;
         dtf = 0.5 * update->dt * force->ftm2v;
         vlimitsq = vlimit * vlimit;

@@ -126,15 +126,34 @@ void PairHertz::compute(int eflag, int vflag) {
                         delx = xtmp - x[j][0];
                         dely = ytmp - x[j][1];
                         delz = ztmp - x[j][2];
-
+						// // double delxx = delx;
+						double delyy = dely;
+						double delzz = delz;
+						
+						// If condition added by me.
+						if (periodic) {
+							printf("\n\nPBC-CHECK\n\n");
+							domain->minimum_image(delx, dely, delz);
+						}
+				
+                        // double rsqq = delxx * delxx + delyy * delyy + delzz * delzz;
                         rsq = delx * delx + dely * dely + delz * delz;
-
+						// If you print this you can see there are a lot of differences
+						// if ( rsqq > rsq )
+						// {
+							// printf("\nDifference between distances pre and post modification\n%lf\n",rsqq-rsq);
+						// }
                         rj = scale * radius[j];
                         rcut = ri + rj;
                         rcutSq = rcut * rcut;
 
-                        if (rsq < rcutSq) {
+						// if ( (rsq < rcutSq) && (rsqq > rcutSq) )
+						// {
+							// printf("\n************************************\nWARNING : Differences in interacting pairs\n************************************\n");
+						// }
 
+                        if (rsq < rcutSq) {
+								
                                 /*
                                  * self contact option:
                                  * if pair of particles was initially close enough to interact via a bulk continuum mechanism (e.g. SPH), exclude pair from contact forces.

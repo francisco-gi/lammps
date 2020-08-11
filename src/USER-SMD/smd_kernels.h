@@ -47,23 +47,27 @@ static inline void spiky_kernel_and_derivative(const double h, const double r, c
         /*
          * Spiky kernel
          */
-
+	
         if (r > h) {
-                printf("r=%f > h=%f in Spiky kernel\n", r, h);
+                // printf("r=%f > h=%f in Spiky kernel\n", r, h);
                 wf = wfd = 0.0;
                 return;
         }
 
         double hr = h - r; // [m]
+		/* $$$$ */
+		// printf("\nCALLING: spiky_kernel_and_derivative\nh = %lf\tr = %lf\n",h,r);
         if (dimension == 2) {
                 double n = 0.3141592654e0 * h * h * h * h * h; // [m^5]
                 wfd = -3.0e0 * hr * hr / n; // [m*m/m^5] = [1/m^3] ==> correct for dW/dr in 2D
                 wf = -0.333333333333e0 * hr * wfd; // [m/m^3] ==> [1/m^2] correct for W in 2D
         } else {
-                wfd = -14.0323944878e0 * hr * hr / (h * h * h * h * h * h); // [1/m^4] ==> correct for dW/dr in 3D
+                wfd = -14.32394488e0 * hr * hr / (h * h * h * h * h * h); // [1/m^4] ==> correct for dW/dr in 3D
                 wf = -0.333333333333e0 * hr * wfd; // [m/m^4] ==> [1/m^3] correct for W in 3D
         }
 
+		/* $$$$ */
+		//printf("\nW(r) = %lf\td/dr[(W)](r) = %lf\n",wf,wfd);
         // alternative formulation
 //              double hr = h - r;
 //

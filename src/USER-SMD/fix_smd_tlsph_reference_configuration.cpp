@@ -58,6 +58,11 @@ FixSMD_TLSPH_ReferenceConfiguration::FixSMD_TLSPH_ReferenceConfiguration(LAMMPS 
         if (atom->map_style == 0)
                 error->all(FLERR, "Pair tlsph with partner list requires an atom map, see atom_modify");
 
+
+		 /* $$$$ */
+		printf("\n**************************************\nCALLING : FixSMD_TLSPH_ReferenceConfiguration  COSTRUCTOR\n**************************************\n");
+
+
         maxpartner = 1;
         npartner = NULL;
         partner = NULL;
@@ -83,6 +88,11 @@ FixSMD_TLSPH_ReferenceConfiguration::FixSMD_TLSPH_ReferenceConfiguration(LAMMPS 
 FixSMD_TLSPH_ReferenceConfiguration::~FixSMD_TLSPH_ReferenceConfiguration() {
         // unregister this fix so atom class doesn't invoke it any more
 
+
+
+		 /* $$$$ */
+		printf("\n**************************************\nCALLING : FixSMD_TLSPH_ReferenceConfiguration  DESTRUCOTR\n**************************************\n");
+
         atom->delete_callback(id, 0);
 // delete locally stored arrays
 
@@ -97,6 +107,9 @@ FixSMD_TLSPH_ReferenceConfiguration::~FixSMD_TLSPH_ReferenceConfiguration() {
 /* ---------------------------------------------------------------------- */
 
 int FixSMD_TLSPH_ReferenceConfiguration::setmask() {
+	
+		 /* $$$$ */
+		// printf("\n**************************************\nCALLING : FixSMD_TLSPH_ReferenceConfiguration::setmask()   --  during PRE_EXCHANGE\n**************************************\n");
         int mask = 0;
         mask |= PRE_EXCHANGE;
         return mask;
@@ -113,7 +126,11 @@ void FixSMD_TLSPH_ReferenceConfiguration::init() {
 
 void FixSMD_TLSPH_ReferenceConfiguration::pre_exchange() {
         //return;
+		
+		 /* $$$$ */
+		// printf("\n**************************************\nCALLING : FixSMD_TLSPH_ReferenceConfiguration::pre_exchange()\n**************************************\n");
 
+		
         //printf("in FixSMD_TLSPH_ReferenceConfiguration::pre_exchange()\n");
         double **defgrad = atom->smd_data_9;
         double *radius = atom->radius;
@@ -151,7 +168,10 @@ void FixSMD_TLSPH_ReferenceConfiguration::pre_exchange() {
                 for (i = 0; i < nlocal; i++) {
 
                         if (mask[i] & groupbit) {
-
+								
+								/* $$$$ */
+								printf("\n=================================================\n=================================================\n");
+								printf("\nREFERENCE CONFICURATION:   RESETTING X0 COORDINATES\n=================================================\n=================================================\n");
                                 // re-set x0 coordinates
                                 x0[i][0] = x[i][0];
                                 x0[i][1] = x[i][1];
@@ -196,6 +216,10 @@ void FixSMD_TLSPH_ReferenceConfiguration::pre_exchange() {
  ------------------------------------------------------------------------- */
 
 void FixSMD_TLSPH_ReferenceConfiguration::setup(int /*vflag*/) {
+	
+		 /* $$$$ */
+		// printf("\n**************************************\nCALLING : FixSMD_TLSPH_ReferenceConfiguration::setup()\n**************************************\n");
+	
         int i, j, ii, jj, n, inum, jnum;
         int *ilist, *jlist, *numneigh, **firstneigh;
         double r, h, wf, wfd;
@@ -287,7 +311,7 @@ void FixSMD_TLSPH_ReferenceConfiguration::setup(int /*vflag*/) {
                         dx(1) = x0[i][1] - x0[j][1];
                         dx(2) = x0[i][2] - x0[j][2];
                         r = dx.norm();
-                        h = radius[i] + radius[j];
+                        h = radius[i] + radius[j];		/* ???? cannot understand  */
 
                         if (INSERT_PREDEFINED_CRACKS) {
                                 if (!crack_exclude(i, j))
@@ -295,11 +319,13 @@ void FixSMD_TLSPH_ReferenceConfiguration::setup(int /*vflag*/) {
                         }
 
                         if (r < h) {
+								// printf("\n**************************************\nSETUP\nspiky_kernel_and_derivative()\n**************************************\n");
                                 spiky_kernel_and_derivative(h, r, domain->dimension, wf, wfd);
 
                                 partner[i][npartner[i]] = tag[j];
                                 wfd_list[i][npartner[i]] = wfd;
                                 wf_list[i][npartner[i]] = wf;
+								// printf("REFERENCE SETUP: W = %lf\t DW = %lf\n",wf,wfd);
                                 npartner[i]++;
                                 if (j < nlocal) {
                                         partner[j][npartner[j]] = tag[i];

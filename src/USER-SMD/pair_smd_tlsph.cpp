@@ -63,7 +63,12 @@ using namespace SMD_Math;
 PairTlsph::PairTlsph(LAMMPS *lmp) :
                 Pair(lmp) {
 
-        onerad_dynamic = onerad_frozen = maxrad_dynamic = maxrad_frozen = NULL;
+        
+		
+		/*$$$$$*/
+		//printf("\n**************************************\nCALLING : PairTlsph - CONSTRUCTOR\n**************************************\n");
+
+		onerad_dynamic = onerad_frozen = maxrad_dynamic = maxrad_frozen = NULL;
 
         failureModel = NULL;
         strengthModel = eos = NULL;
@@ -92,7 +97,7 @@ PairTlsph::PairTlsph(LAMMPS *lmp) :
 /* ---------------------------------------------------------------------- */
 
 PairTlsph::~PairTlsph() {
-        //printf("in PairTlsph::~PairTlsph()\n");
+        printf("\nCALLING in PairTlsph::~PairTlsph()\n");
 
         if (allocated) {
                 memory->destroy(setflag);
@@ -132,6 +137,11 @@ PairTlsph::~PairTlsph() {
  ---------------------------------------------------------------------- */
 
 void PairTlsph::PreCompute() {
+	
+		/*$$$$$*/
+		//printf("\n**************************************\nCALLING : PairTlsph - PreCompute()\n**************************************\n");
+
+
         tagint *mol = atom->molecule;
         double *vfrac = atom->vfrac;
         double *radius = atom->radius;
@@ -157,21 +167,34 @@ void PairTlsph::PreCompute() {
         int periodic = (domain->xperiodic || domain->yperiodic || domain->zperiodic);
         bool status;
         Matrix3d F0;
-
+		
+		/* $$$$ */
+		double test_double_r, test_double_h,test_double_w;
+		Vector3d test_vec;
+		Matrix3d test_M, test_M2, test_M3, test_M4,  test_M_tmp, test_M2_tmp,test_M3_tmp,test_M4_tmp;
+		
         eye.setIdentity();
 
         for (i = 0; i < nlocal; i++) {
 
                 itype = type[i];
                 if (setflag[itype][itype] == 1) {
-
+						
                         K[i].setZero();
                         Fincr[i].setZero();
                         Fdot[i].setZero();
                         numNeighsRefConfig[i] = 0;
                         smoothVelDifference[i].setZero();
                         hourglass_error[i] = 0.0;
-
+						
+						/* $$$$ */
+						test_M.setZero();
+						test_M2.setZero();
+						test_M3.setZero();
+						test_M4.setZero();
+						//test_M_tmp.setZero();
+						//test_M2_tmp.setZero();
+						
                         if (mol[i] < 0) { // valid SPH particle have mol > 0
                                 continue;
                         }
@@ -194,8 +217,14 @@ void PairTlsph::PreCompute() {
                                 vinti(idim) = vint[i][idim];
                         }
 
-                        for (jj = 0; jj < jnum; jj++) {
+							/*$$$$*/
+							//test_vec = xi-x0i;
+							//if(test_vec.norm()>0)
+							//	printf("\nDIFF ORIGINAL POS %lf\n",test_vec.norm());
 
+						
+                        for (jj = 0; jj < jnum; jj++) {
+	
                                 if (partner[i][jj] == 0)
                                         continue;
                                 j = atom->map(partner[i][jj]);
@@ -221,9 +250,13 @@ void PairTlsph::PreCompute() {
                                 }
                                 dx0 = x0j - x0i;
                                 dx = xj - xi;
-
-                                if (periodic)
-                                        domain->minimum_image(dx0(0), dx0(1), dx0(2));
+								
+								// $$$$$
+                                // if (periodic)
+								// {
+                                        // domain->minimum_image(dx0(0), dx0(1), dx0(2));
+										// domain->minimum_image(dx(0), dx(1), dx(2));
+								// }										
 
                                 r0Sq = dx0.squaredNorm();
                                 h = irad + radius[j];
@@ -239,14 +272,61 @@ void PairTlsph::PreCompute() {
                                 scale = 1.0 - degradation_ij[i][jj];
                                 wf = wf_list[i][jj] * scale;
                                 wfd = wfd_list[i][jj] * scale;
-                                g = (wfd / r0) * dx0;
+								/* $$$$ */
+								//printf("\nSCALE: %lf\n",scale);
+								/* $$$$ */
+								/* test_double_r = dx.norm();	
+								test_double_h = 0.006;
+								double h6 = test_double_h*test_double_h*test_double_h*test_double_h*test_double_h*test_double_h;
+								test_double_w = (test_double_h-test_double_r);
+								test_double_w = test_double_w*test_double_w*test_double_w;
+								test_double_w*=(4.7746492861/h6);
+								double wf2;
+								*/
+								//if(i==nlocal-1 || true){
+								// printf("\n**************************************\n");
+								// cout << "Here is W(r)" << i << jj << " = " << wf << "\tD[W(r)] = " << wfd << endl;
+								/* cout << "r = " << dx.norm() << "\tW(r) = " << (4.7746492861/h6)*(0.006-test_double_r)*(0.006-test_double_r)*(0.006-test_double_r) << "\t" << test_double_w << endl;
+								                spiky_kernel_and_derivative(test_double_h, dx.norm(), 3, test_double_w, wf2);
+								                spiky_kernel_and_derivative(test_double_h, dx0.norm(), 3, test_double_w, wf2);
+								wf2 = 4.7746492861/h6;
+								test_double_r = test_double_h-dx0.norm();
+								wf2 = wf2*test_double_r*test_double_r*test_double_r;
+								cout << "r0 = " << dx0.norm() << "\tW(r0) = "  << wf2 << endl;
+								*/
+								//}
+								// printf("\n**************************************\n");
+								
+								
+                                g = (wfd / r0) * dx0; /*   regerence configuration  */
 
                                 /* build matrices */
                                 Ktmp = -g * dx0.transpose();
                                 Fdottmp = -dv * g.transpose();
                                 Ftmp = -(dx - dx0) * g.transpose();
-
-                                K[i] += volj * Ktmp;
+								// cout << "\nHere isdisplacement difference tmp:" << endl << dx - dx0 << endl;
+								// cout << "\nHere is gradient of W tmp:" << endl << g << endl;
+								// cout << "\nHere is matrix F tmp:" << endl << Ftmp << endl;
+								/* $$$$ */
+								/*cout << "dx0\t"<< dx0 << endl << "D[W(r)] = " << wfd << endl;
+								*/
+								//cout << "g " << endl << g.transpose() << endl;
+								/*
+								cout << "dx0\t" << dx0 << endl << "D[W(r)] = " << wfd << endl;*/
+							/*	test_M_tmp = (x0i) * g.transpose();
+								test_M2_tmp = (x0j) * g.transpose();
+							
+							//cout << g << endl;
+								test_M3_tmp = (xi) * g.transpose();
+								test_M4_tmp = (xj) * g.transpose();
+								
+                                test_M += volj * test_M_tmp;
+                                test_M2 += volj * test_M2_tmp;
+								
+								test_M3 += volj * test_M3_tmp;
+                                test_M4 += volj * test_M4_tmp;
+							*/	
+								K[i] += volj * Ktmp;
                                 Fdot[i] += volj * Fdottmp;
                                 Fincr[i] += volj * Ftmp;
                                 shepardWeight += volj * wf;
@@ -260,13 +340,46 @@ void PairTlsph::PreCompute() {
                         } else {
                                 smoothVelDifference[i].setZero();
                         }
+						
+				/* $$$$ */
+				/*if(i==nlocal-1){
+					printf("particle [" TAGINT_FORMAT "] -- det(F)=%f \n", tag[i],
+					Fincr[i].determinant());*/
+			//		cout << "\nHere is matrix Fincr before correction:" << endl << Fincr[i] << endl;
+				/*	cout << "Here is matrix <X0i-X0j>:" << endl << test_M - test_M2 << endl;
+					//cout << "Here is matrix <X0j>:" << endl << test_M2 << endl;
+					cout << "Here is matrix <xi-xj>:" << endl << test_M3 - test_M4 << endl;
+					//cout << "Here is matrix <xj>:" << endl << test_M4 << endl;
+					cout << "Here is matrix <Fi>:" << endl << Fincr[i]  << endl;
+				}*/
+				
+                
+				pseudo_inverse_SVD(K[i]);
+				
 
-                        pseudo_inverse_SVD(K[i]);
-                        Fdot[i] *= K[i];
+                      
+						Fdot[i] *= K[i];
                         Fincr[i] *= K[i];
                         Fincr[i] += eye;
 
+				/* $$$$ */
+				/*if(i==nlocal-1){
+					printf("\nCORRECTED MATRICES\n\n");
+					cout << "Here is matrix <X0i - X0j>:" << endl << (test_M - test_M2) * K[i] << endl;
+					*/
+					// cout << "Here is matrix K:" << endl << K[i] << endl;
+					
+					// cout << "Here is matrix K inverse:" << endl <<  K[i].inverse() << endl;
+					/*
+					cout << "Here is matrix <X0i>:" << endl << test_M * K[i] << endl;
+					cout << "Here is matrix <xi - xj>:" << endl << (test_M3 - test_M4)* K[i] << endl;
+					cout << "Here is matrix <xi>:" << endl << test_M3 * K[i] << endl;
+					cout << "Here is matrix <Fi>:" << endl << Fincr[i]  << endl;
+				}*/
+
                         if (JAUMANN) {
+							/* $$$$ */
+							printf("\n*******************\n*******************\nJAUMANN\n*******************\n*******************\n");
                                 R[i].setIdentity(); // for Jaumann stress rate, we do not need a subsequent rotation back into the reference configuration
                         } else {
                                 status = PolDec(Fincr[i], R[i], U, false); // polar decomposition of the deformation gradient, F = R * U
@@ -292,8 +405,11 @@ void PairTlsph::PreCompute() {
                         // convention: unrotated frame is that one, where the true rotation of an integration point has been subtracted.
                         // stress in the unrotated frame of reference is denoted sigma (stress seen by an observer doing rigid body rotations along with the material)
                         // stress in the true frame of reference (a stationary observer) is denoted by T, "true stress"
-                        D[i] = (R[i].transpose() * D[i] * R[i]).eval();
-
+                        /*$$$$*/
+						//cout << "D" << endl << D[i] << endl;
+						D[i] = (R[i].transpose() * D[i] * R[i]).eval();
+						//cout << "RDR.eval" << endl << D[i] << endl;
+						//printf("\n******************************************************************************************************************\n");
                         // limit strain rate
                         //double limit = 1.0e-3 * Lookup[SIGNAL_VELOCITY][itype] / radius[i];
                         //D[i] = LimitEigenvalues(D[i], limit);
@@ -302,7 +418,26 @@ void PairTlsph::PreCompute() {
                          * make sure F stays within some limits
                          */
 
-                        if ((detF[i] < DETF_MIN) || (detF[i] > DETF_MAX) || (numNeighsRefConfig[i] == 0)) {
+
+						/* $$$$ I am printing the matrix for the last local particle at every timestep !!!!!  */
+						/* $$$$ */
+						/*if(i==nlocal-1){
+                                printf("particle [" TAGINT_FORMAT "] -- det(F)=%f \n", tag[i],
+                                                Fincr[i].determinant());
+                           //     printf("nn = %d, damage=%f\n", numNeighsRefConfig[i], damage[i]);
+                                cout << "Here is matrix F:" << endl << Fincr[i] << endl;
+                           //     cout << "Here is matrix F^-1:" << endl << FincrInv[i] << endl;
+                           //     cout << "Here is matrix K^-1:" << endl << K[i] << endl;
+                           //     cout << "Here is matrix K:" << endl << K[i].inverse() << endl;
+                            //    cout << "Here is det of K" << endl << (K[i].inverse()).determinant() << endl;
+                           //     cout << "Here is matrix R:" << endl << R[i] << endl;
+                               cout << "Here is det of R" << endl << R[i].determinant() << endl;
+                                cout << "Here is matrix U:" << endl << U << endl;
+                                //error->one(FLERR, "");
+                        }*/
+						
+						
+						if ((detF[i] < DETF_MIN) || (detF[i] > DETF_MAX) || (numNeighsRefConfig[i] == 0)) {
                                 printf("deleting particle [" TAGINT_FORMAT "] because det(F)=%f is outside stable range %f -- %f \n", tag[i],
                                                 Fincr[i].determinant(),
                                                 DETF_MIN, DETF_MAX);
@@ -388,22 +523,31 @@ void PairTlsph::compute(int eflag, int vflag) {
                 return;
         }
 
+
+/* $$$$ */
+//printf("\n*******************\nCALLING : COMPUTE  A - pre compute\n*******************\n");
         /*
          * calculate deformations and rate-of-deformations
          */
         PairTlsph::PreCompute();
 
+
+//printf("\n*******************\nCALLING : COMPUTE  B - assemble stress\n*******************\n");
         /*
          * calculate stresses from constitutive models
          */
-        PairTlsph::AssembleStress();
+		PairTlsph::AssembleStress();
 
+
+//printf("\n*******************\nCALLING : COMPUTE  C - forward comm\n*******************\n");
         /*
          * QUANTITIES ABOVE HAVE ONLY BEEN CALCULATED FOR NLOCAL PARTICLES.
          * NEED TO DO A FORWARD COMMUNICATION TO GHOST ATOMS NOW
          */
         comm->forward_comm_pair(this);
 
+ 
+//printf("\n*******************\nCALLING : COMPUTE  D  - compute forces\n*******************\n");
         /*
          * compute forces between particles
          */
@@ -412,6 +556,10 @@ void PairTlsph::compute(int eflag, int vflag) {
 }
 
 void PairTlsph::ComputeForces(int eflag, int vflag) {
+		/*$$$$$*/
+		//printf("\n*******************\nCALLING : ComputeForces\n*******************\n");
+
+
         tagint *mol = atom->molecule;
         double **x = atom->x;
         double **v = atom->vest;
@@ -454,6 +602,7 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
         dtRelative = 1.0e22;
 
         for (i = 0; i < nlocal; i++) {
+				
 
                 if (mol[i] < 0) {
                         continue; // Particle i is not a valid SPH particle (anymore). Skip all interactions with this particle.
@@ -466,7 +615,7 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
                 // initialize aveage mass density
                 h = 2.0 * radius[i];
                 r = 0.0;
-                spiky_kernel_and_derivative(h, r, domain->dimension, wf, wfd);
+                spiky_kernel_and_derivative(h, r, domain->dimension, wf, wfd);  /* r = 0 ??? */
                 shepardWeight = wf * voli;
 
                 for (idim = 0; idim < 3; idim++) {
@@ -474,7 +623,9 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
                         xi(idim) = x[i][idim];
                         vi(idim) = v[i][idim];
                 }
-
+				
+				/*jnum = number of partners of i particle
+				  j    = index of partner particle*/
                 for (jj = 0; jj < jnum; jj++) {
                         if (partner[i][jj] == 0)
                                 continue;
@@ -503,49 +654,69 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
                                 vj(idim) = v[j][idim];
                         }
 
-                        if (periodic)
-                                domain->minimum_image(dx0(0), dx0(1), dx0(2));
+
+						dx0 = x0j - x0i;
+						
+                        // distance vectors in current and reference configuration, velocity difference
+                        dx = xj - xi;
+                        dv = vj - vi;
+						// $$$$$
+                        // if (periodic)
+						// {
+                                // domain->minimum_image(dx0(0), dx0(1), dx0(2));
+								// domain->minimum_image(dx(0) , dx(1) , dx(2) );
+						// }
 
                         // check that distance between i and j (in the reference config) is less than cutoff
-                        dx0 = x0j - x0i;
                         r0Sq = dx0.squaredNorm();
                         h = radius[i] + radius[j];
                         hMin = MIN(hMin, h);
                         r0 = sqrt(r0Sq);
                         volj = vfrac[j];
 
-                        // distance vectors in current and reference configuration, velocity difference
-                        dx = xj - xi;
-                        dv = vj - vi;
                         r = dx.norm(); // current distance
-
+						/* $$$$ */
+						//printf("\ncurrent distance calculated\tr = %lf\n",r);
                         // scale the interaction according to the damage variable
                         scale = 1.0 - degradation_ij[i][jj];
                         wf = wf_list[i][jj] * scale;
                         wfd = wfd_list[i][jj] * scale;
 
+					/* $$$$ */
+					//printf("\n Particles %d-%d\n",i,jj);
+					//printf("Spiky Kernel\th = %lf\tr = %lf\n",h,r);
+					//printf("\t\tW(r) = %lf\tgrad(W)(r) = %lf\n",wf,wfd);
+
                         g = (wfd / r0) * dx0; // uncorrected kernel gradient
 
                         /*
                          * force contribution -- note that the kernel gradient correction has been absorbed into PK1
+						 
+							remenber the "-" sign is there because g is -\nabla_{X_i} W(|X_i-X_j|)
                          */
 
                         f_stress = -voli * volj * (PK1[i] + PK1[j]) * g;
-
+						
+						
+					/*	if(i==nlocal-1 && j==jnum-1)
+							cout << "Here are PK Stress tensors" << endl << PK1[i]*K[i].inverse()  << endl;
+					*/
                         /*
                          * artificial viscosity
+						 * 		0.1*h at the denominator seems quite large in order only to avoid division by zero 
+						 * 		since in the user guide thy say usually h is around 6 times the contact radius
                          */
                         delVdotDelR = dx.dot(dv) / (r + 0.1 * h); // project relative velocity onto unit particle distance vector [m/s]
                         LimitDoubleMagnitude(delVdotDelR, 0.01 * Lookup[SIGNAL_VELOCITY][itype]);
                         mu_ij = h * delVdotDelR / (r + 0.1 * h); // units: [m * m/s / m = m/s]
                         visc_magnitude = (-Lookup[VISCOSITY_Q1][itype] * Lookup[SIGNAL_VELOCITY][itype] * mu_ij
-                                        + Lookup[VISCOSITY_Q2][itype] * mu_ij * mu_ij) / Lookup[REFERENCE_DENSITY][itype]; // units: m^5/(s^2 kg))
+                                        + Lookup[VISCOSITY_Q2][itype] * mu_ij * mu_ij) / Lookup[REFERENCE_DENSITY][itype]; // units: m^5/(s^2 kg)) - Lookup[VISCOSOTY*] are diimensionless assuming that Lookup[velocity] has velocity dimension
                         f_visc = rmass[i] * rmass[j] * visc_magnitude * wfd * dx / (r + 1.0e-2 * h); // units: kg^2 * m^5/(s^2 kg) * m^-4 = kg m / s^2 = N
 
                         /*
                          * hourglass deviation of particles i and j
                          */
-
+	
                         gamma = 0.5 * (Fincr[i] + Fincr[j]) * dx0 - dx;
                         hg_err = gamma.norm() / r0;
                         hourglass_error[i] += volj * wf * hg_err;
@@ -553,6 +724,7 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
                         /* SPH-like hourglass formulation */
 
                         if (MAX(plastic_strain[i], plastic_strain[j]) > 1.0e-3) {
+							
                                 /*
                                  * viscous hourglass formulation for particles with plastic deformation
                                  */
@@ -584,7 +756,19 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
 
                         // sum stress, viscous, and hourglass forces
                         sumForces = f_stress + f_visc + f_hg; // + f_spring;
-
+						
+						/*$$$$*/
+						
+						//if(f_stress.norm()>0.00001)
+						//	if(i == nlocal-1 && j==jnum-1 && f_stress.norm()< 0.000001)// || i == nlocal-2)
+						//	printf("%d-%d\ndz_i =\t%.12lf\t dz_ij =\t%.12lf\t dl =\t%.12lf \nf_stress =%lf e-15\n\n",i,j, xi(2)-x0i(2), xi(2)-xj(2),xi(2)-xj(2) -x0i(2)+ x0j(2),  1000000000000000.*f_stress(2));
+						//if(f_visc.norm()>0.00001)
+							// if(i == nlocal-1 && j==jnum-1)// || i == nlocal-2)	
+							// printf("f_visc =\t%lf\t\t%lf\t\t%lf\n", 1000000000.*f_visc(0), 1000000000.*f_visc(1) , 1000000000.*f_visc(2));
+						//if(f_hg.norm()>0.00001)
+							// if(i == nlocal-1&& j==jnum-1)// || i == nlocal-2)	
+							// printf("f_hg \t=\t%lf\t\t%lf\t\t%lf\n",1000000000.*f_hg(0) , 1000000000.*f_hg(1) , 1000000000.*f_hg(2));
+							
                         // energy rate -- project velocity onto force vector
                         deltaE = 0.5 * sumForces.dot(dv);
 
@@ -686,6 +870,10 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
 
         if (vflag_fdotr)
                 virial_fdotr_compute();
+			
+			/* $$$$ */
+			//printf("\n*******************\nCALLING : END - ComputeForces\n*******************\n");
+		
 }
 
 /* ----------------------------------------------------------------------
@@ -717,6 +905,10 @@ void PairTlsph::AssembleStress() {
         dtCFL = 1.0e22;
         pFinal = 0.0;
 
+
+ /* $$$$ */
+//printf("\n*******************\nCALLING : AssembleStress\n*******************\n");
+        
         for (i = 0; i < nlocal; i++) {
                 particle_dt[i] = 0.0;
 
@@ -744,6 +936,10 @@ void PairTlsph::AssembleStress() {
                                 sigmaInitial_dev = Deviator(sigmaInitial);
                                 d_iso = D[i].trace(); // volumetric part of stretch rate
                                 d_dev = Deviator(D[i]); // deviatoric part of stretch rate
+								/* $$$$ */
+								/*if(i==nlocal-1){
+								printf("\n**************************************\n\n**************************************\n");
+								cout << "D" << D[i] << endl << "d_iso " << d_iso << endl << "d_dev" << d_dev << endl;}*/
                                 strain = 0.5 * (Fincr[i].transpose() * Fincr[i] - eye);
                                 mass_specific_energy = e[i] / rmass[i]; // energy per unit mass
                                 rho = rmass[i] / (detF[i] * vfrac[i]);
@@ -752,7 +948,9 @@ void PairTlsph::AssembleStress() {
                                 /*
                                  * pressure: compute pressure rate p_rate and final pressure pFinal
                                  */
-
+							/* $$$$ */
+							/*if(i==nlocal-1)
+							printf("\n*******************\nCALLING : PairTlsph::ComputePressure\n*******************\n");*/
                                 ComputePressure(i, rho, mass_specific_energy, vol_specific_energy, pInitial, d_iso, pFinal, p_rate);
 
                                 /*
@@ -760,6 +958,9 @@ void PairTlsph::AssembleStress() {
                                  */
 
                                 //cout << "this is the strain deviator rate" << endl << d_dev << endl;
+							 /* $$$$ */
+							/*if(i==nlocal-1)
+							printf("\n*******************\nCALLING : PairTlsph::ComputeStressDeviator\n*******************\n");*/
                                 ComputeStressDeviator(i, sigmaInitial_dev, d_dev, sigmaFinal_dev, sigma_dev_rate, plastic_strain_increment);
                                 //cout << "this is the stress deviator rate" << endl << sigma_dev_rate << endl;
 
@@ -778,6 +979,7 @@ void PairTlsph::AssembleStress() {
                                 sigmaFinal = pFinal * eye + sigmaFinal_dev; // this is the stress that is kept
 
                                 if (JAUMANN) {
+									printf("\n*******************\n*******************\nJAUMANN\n*******************\n*******************\n");
                                         /*
                                          * sigma is already the co-rotated Cauchy stress.
                                          * The stress rate, however, needs to be made objective.
@@ -797,6 +999,8 @@ void PairTlsph::AssembleStress() {
                                          * sigma is the unrotated stress.
                                          * need to do forward rotation of the unrotated stress sigma to the current configuration
                                          */
+										 
+										/* $$$$ */
                                         T = R[i] * sigmaFinal * R[i].transpose();
                                 }
 
@@ -829,11 +1033,19 @@ void PairTlsph::AssembleStress() {
                                  * the incremental deformation gradient, not the full deformation gradient.
                                  */
                                 PK1[i] = detF[i] * T * FincrInv[i].transpose();
-
+								
+								
+								/* $$$$ */
+								/*if(i==nlocal-1)
+									cout << "Here is PK Stress tensors" << endl << PK1[i]  << endl;
+								*/
+								
                                 /*
                                  * pre-multiply stress tensor with shape matrix to save computation in force loop
+								 ATTENTION TO THE SIGN OF K, is defined with a minus that it has been compensated for all the 
+								 quantities but PK
                                  */
-                                PK1[i] = PK1[i] * K[i];
+                                PK1[i] = PK1[i] *   K[i];
 
                                 /*
                                  * compute stable time step according to Pronto 2d
@@ -843,6 +1055,10 @@ void PairTlsph::AssembleStress() {
                                 deltaSigma = sigmaFinal - sigmaInitial;
                                 p_rate = deltaSigma.trace() / (3.0 * dt + 1.0e-16);
                                 sigma_dev_rate = Deviator(deltaSigma) / (dt + 1.0e-16);
+
+							 /* $$$$ */
+							//if(i==nlocal-1)
+							//printf("\n*******************\nCALLING : PairTlsph::effective_longitudinal_modulus\n*******************\n");
 
                                 double K_eff, mu_eff;
                                 effective_longitudinal_modulus(itype, dt, d_iso, p_rate, d_dev, sigma_dev_rate, damage[i], K_eff, mu_eff, M_eff);
@@ -1066,6 +1282,7 @@ void PairTlsph::coeff(int narg, char **arg) {
                         (Lookup[LAME_LAMBDA][itype] + 2.0 * Lookup[SHEAR_MODULUS][itype]) / Lookup[REFERENCE_DENSITY][itype]);
         Lookup[BULK_MODULUS][itype] = Lookup[LAME_LAMBDA][itype] + 2.0 * Lookup[SHEAR_MODULUS][itype] / 3.0;
 
+		/* $$$$
         if (comm->me == 0) {
                 printf("\n material unspecific properties for SMD/TLSPH definition of particle type %d:\n", itype);
                 printf("%60s : %g\n", "reference density", Lookup[REFERENCE_DENSITY][itype]);
@@ -1079,8 +1296,7 @@ void PairTlsph::coeff(int narg, char **arg) {
                 printf("%60s : %g\n", "shear modulus", Lookup[SHEAR_MODULUS][itype]);
                 printf("%60s : %g\n", "bulk modulus", Lookup[BULK_MODULUS][itype]);
                 printf("%60s : %g\n", "signal velocity", Lookup[SIGNAL_VELOCITY][itype]);
-
-        }
+        } */
 
         /*
          * read following material cards
@@ -1692,12 +1908,16 @@ void PairTlsph::coeff(int narg, char **arg) {
 
 double PairTlsph::init_one(int i, int j) {
 
+ /* $$$$ */
+//printf("\n*******************\nCALLING : PairTlsph::init_one()\n*******************\n");
         if (!allocated)
                 allocate();
 
         if (setflag[i][j] == 0)
+		{
+				printf("Types not set: %d - %d\n",i,j);
                 error->all(FLERR, "All pair coeffs are not set");
-
+		}
         if (force->newton == 1)
                 error->all(FLERR, "Pair style tlsph requires newton off");
 
@@ -1718,6 +1938,8 @@ double PairTlsph::init_one(int i, int j) {
 void PairTlsph::init_style() {
         int i;
 
+ /* $$$$ */
+printf("\n*******************\nCALLING : PairTlsph::init_style()\n*******************\n");
         if (force->newton_pair == 1) {
                 error->all(FLERR, "Pair style tlsph requires newton pair off");
         }
@@ -1777,6 +1999,9 @@ void PairTlsph::init_style() {
  ------------------------------------------------------------------------- */
 
 void PairTlsph::init_list(int id, class NeighList *ptr) {
+	
+ /* $$$$ */
+printf("\n*******************\nCALLING : PairTlsph::init_list()\n*******************\n");
   if (id == 0) list = ptr;
 }
 
@@ -1785,6 +2010,9 @@ void PairTlsph::init_list(int id, class NeighList *ptr) {
  ------------------------------------------------------------------------- */
 
 double PairTlsph::memory_usage() {
+	
+ /* $$$$ */
+printf("\n*******************\nCALLING : PairTlsph::memory_usage\n*******************\n");
   return 118.0 * nmax * sizeof(double);
 }
 
@@ -2098,6 +2326,9 @@ void PairTlsph::ComputeDamage(const int i, const Matrix3d strain, const Matrix3d
         eye.setIdentity();
         stress_deviator = Deviator(stress);
         double pressure = -stress.trace() / 3.0;
+
+ /* $$$$ */
+printf("\n*******************\nCALLING : PairTlsph::ComputeDamage\n*******************\n");
 
         if (failureModel[itype].failure_max_principal_stress) {
                 error->one(FLERR, "not yet implemented");
