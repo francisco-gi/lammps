@@ -7,7 +7,6 @@
 
 
 Obj_*
-Obj_mpi/*.o
 /*.o
 
 /style_*.h
