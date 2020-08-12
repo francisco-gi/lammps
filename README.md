@@ -1,1 +1,1 @@
-# lammps_test
+# lammps
