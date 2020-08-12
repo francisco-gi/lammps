@@ -6,7 +6,7 @@
 
 
 
-Obj_*
+/Obj_*
 /*.o
 
 /style_*.h
