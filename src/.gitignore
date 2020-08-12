@@ -4,6 +4,9 @@
 /Make.py.last
 /lmp_*
 
+
+
+Obj_*
 /*.o
 
 /style_*.h
