@@ -36,6 +36,10 @@ namespace LAMMPS_NS {
 #define MIN(A,B) ((A) < (B) ? (A) : (B))
 #define MAX(A,B) ((A) > (B) ? (A) : (B))
 
+// imported from liggghts
+
+#define UNUSED(P) (void)P
+
 // enum used for KOKKOS host/device flags
 
 enum ExecutionSpace{Host,Device};

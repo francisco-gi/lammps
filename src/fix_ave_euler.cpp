@@ -44,9 +44,9 @@
 #include <cmath>
 #include "mpi_liggghts.h"
 #include "fix_ave_euler.h"
-#include "fix_multisphere.h"
+//#include "fix_multisphere.h"
 #include "compute_stress_atom.h"
-#include "math_extra_liggghts.h"
+#include "math_extra.h"
 #include "atom.h"
 #include "force.h"
 #include "domain.h"
@@ -100,7 +100,8 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   triclinic_ = domain->triclinic;  
 
   // random number generator, seed is hardcoded
-  random_ = new RanPark(lmp,"15485863");
+  // correction str to int
+  random_ = new RanPark(lmp,15485863);
 
   // parse args
   if (narg < 6) error->all(FLERR,"Illegal fix ave/pic command");
@@ -209,10 +210,11 @@ void FixAveEuler::init()
     error->fix_error(FLERR,this,"requires atom attribute mass");
 
   // does not work with MS
-  FixMultisphere* fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
+  /*
+   * FixMultisphere* fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
   if(fix_ms)
       error->fix_error(FLERR,this,"does not work with multisphere");
-
+  */
   // check if box constant
   box_change_size_ = false;
   if(domain->box_change_size)
@@ -613,7 +615,7 @@ void FixAveEuler::calculate_eu()
 
         // calculate volume fraction
         //safety check, add an epsilon to weight if any particle ended up in that cell
-        if(vol_fr_[icell] > 0. && MathExtraLiggghts::compDouble(weight_[icell],0.,1e-6))
+        if(vol_fr_[icell] > 0. && MathExtra::compDouble(weight_[icell],0.,1e-6))
            weight_[icell] = eps_ntry;
         if(weight_[icell] < eps_ntry )
             vol_fr_[icell] = 0.;

@@ -139,6 +139,12 @@ namespace MathExtra {
                         double mass, double *inertia);
   void inertia_triangle(double *idiag, double *quat, double mass,
                         double *inertia);
+
+
+
+  // imported from liggghts 
+  // double comparison
+  inline bool compDouble(double const a, double const b, double const prec = 1e-13);
 }
 
 /* ----------------------------------------------------------------------
@@ -789,5 +795,29 @@ inline void MathExtra::outer3(const double *v1, const double *v2,
     ans[1][0] = v1[1]*v2[0]; ans[1][1] = v1[1]*v2[1]; ans[1][2] = v1[1]*v2[2];
     ans[2][0] = v1[2]*v2[0]; ans[2][1] = v1[2]*v2[1]; ans[2][2] = v1[2]*v2[2];
 }
+
+
+/*-----------------------------------------------------------*/
+
+/* -----------------------------------------------------------------------------
+ * 		Imported from liggghts
+ * compare two doubles by using their integer representation
+ * source: http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
+ -------------------------------------------------------------------------------*/
+
+bool MathExtra::compDouble(double const a, double const b, double const prec)
+{
+  if (a == b)
+    return true;
+
+  if (b == 0)
+    return a < prec && a > -prec;
+
+  double x = (a-b);//b;
+
+  return x < prec && x > -prec;
+}
+
+
 
 #endif
