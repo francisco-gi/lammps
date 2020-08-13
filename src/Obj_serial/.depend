@@ -1,8 +1,8 @@
 # FastDep v2.1 for LAMMPS
 # Search path: .:..:../../lib/smd/includelink:../STUBS:../../lib/includelink/eigen3
 #   419 sources
-#  1425 includes
-#  1459 depfiles
+#  1426 includes
+#  1460 depfiles
 write_restart.o : ../write_restart.cpp ../force.h ../neighbor.h ../pointers.h ../lammps.h ../pair.h ../improper.h ../exceptions.h ../angle.h ../dihedral.h ../update.h ../fix.h ../lmpwindows.h ../output.h ../modify.h ../thermo.h ../lmptype.h ../domain.h ../atom.h ../comm.h ../universe.h ../mpiio.h ../atom_vec.h ../bond.h ../error.h ../write_restart.h ../memory.h ../group.h
 write_dump.o : ../write_dump.cpp ../dump_deprecated.h ../pointers.h ../lammps.h ../dump_dcd.h ../exceptions.h ../dump_image.h ../dump_custom.h ../update.h ../lmpwindows.h ../dump.h ../lmptype.h ../dump_cfg.h ../comm.h ../dump_movie.h ../write_dump.h ../dump_atom.h ../dump_local.h ../dump_xyz.h ../error.h ../style_dump.h ../utils.h
 write_data.o : ../write_data.cpp ../force.h ../pointers.h ../lammps.h ../pair.h ../improper.h ../exceptions.h ../angle.h ../dihedral.h ../update.h ../fix.h ../lmpwindows.h ../output.h ../modify.h ../thermo.h ../lmptype.h ../domain.h ../atom.h ../comm.h ../universe.h ../atom_vec.h ../bond.h ../write_data.h ../error.h ../memory.h
@@ -276,14 +276,14 @@ fix_ave_time.o : ../fix_ave_time.cpp ../force.h ../pointers.h ../lammps.h ../exc
 fix_ave_histo_weight.o : ../fix_ave_histo_weight.cpp ../pointers.h ../lammps.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../fix_ave_histo.h ../modify.h ../lmptype.h ../atom.h ../input.h ../variable.h ../fix_ave_histo_weight.h ../error.h ../compute.h ../memory.h
 fix_ave_histo.o : ../fix_ave_histo.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../fix_ave_histo.h ../modify.h ../lmptype.h ../atom.h ../input.h ../variable.h ../error.h ../compute.h ../memory.h
 fix_aveforce.o : ../fix_aveforce.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../update.h ../respa.h ../fix.h ../lmpwindows.h ../integrate.h ../modify.h ../lmptype.h ../domain.h ../atom.h ../input.h ../region.h ../variable.h ../fix_aveforce.h ../error.h
-fix_ave_euler.o : ../fix_ave_euler.cpp ../force.h ../neighbor.h ../pointers.h ../lammps.h ../math_extra.h ../mpi_liggghts.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../modify.h ../lmptype.h ../domain.h ../atom.h ../region.h ../vector_liggghts.h ../error.h ../memory.h ../compute.h ../fix_ave_euler.h ../random_park.h ../compute_stress_atom.h
+fix_ave_euler.o : ../fix_ave_euler.cpp ../force.h ../neighbor.h ../pointers.h ../lammps.h ../math_extra.h ../mpi_liggghts.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../modify.h ../lmptype.h ../domain.h ../atom.h ../comm.h ../region.h ../vector_liggghts.h ../error.h ../memory.h ../compute.h ../fix_ave_euler.h ../random_park.h ../compute_stress_atom.h
 fix_ave_correlate.o : ../fix_ave_correlate.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../modify.h ../lmptype.h ../input.h ../variable.h ../error.h ../compute.h ../memory.h ../fix_ave_correlate.h
 fix_ave_chunk.o : ../fix_ave_chunk.cpp ../compute_chunk_atom.h ../force.h ../pointers.h ../lammps.h ../fix_ave_chunk.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../modify.h ../lmptype.h ../domain.h ../atom.h ../input.h ../variable.h ../error.h ../compute.h ../memory.h
 fix_ave_atom.o : ../fix_ave_atom.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../modify.h ../fix_ave_atom.h ../lmptype.h ../atom.h ../input.h ../variable.h ../error.h ../compute.h ../memory.h
 fix_addforce.o : ../fix_addforce.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../update.h ../respa.h ../fix_addforce.h ../fix.h ../lmpwindows.h ../integrate.h ../modify.h ../lmptype.h ../domain.h ../atom.h ../input.h ../region.h ../variable.h ../atom_masks.h ../error.h ../memory.h
 fix_adapt.o : ../fix_adapt.cpp ../force.h ../fix_adapt.h ../pointers.h ../lammps.h ../pair.h ../exceptions.h ../update.h ../respa.h ../fix.h ../lmpwindows.h ../integrate.h ../pair_hybrid.h ../modify.h ../lmptype.h ../fix_store.h ../atom.h ../input.h ../bond.h ../variable.h ../error.h ../memory.h ../math_const.h ../utils.h ../kspace.h ../group.h
 finish.o : ../finish.cpp ../force.h ../neighbor.h ../pointers.h ../lammps.h ../exceptions.h ../neigh_list.h ../update.h ../lmpwindows.h ../timer.h ../accelerator_kokkos.h ../modify.h ../lmptype.h ../domain.h ../atom.h ../comm.h ../universe.h ../finish.h ../molecule.h ../comm_brick.h ../atom_vec.h ../min.h ../neigh_request.h ../error.h ../comm_tiled.h ../memory.h ../kspace.h
-error.o : ../error.cpp ../pointers.h ../lammps.h ../exceptions.h ../update.h ../lmpwindows.h ../output.h ../lmptype.h ../input.h ../universe.h ../error.h
+error.o : ../error.cpp ../pointers.h ../lammps.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../output.h ../lmptype.h ../input.h ../universe.h ../error_special.h ../error.h
 dump_xyz.o : ../dump_xyz.cpp ../pointers.h ../lammps.h ../exceptions.h ../update.h ../lmpwindows.h ../dump.h ../lmptype.h ../atom.h ../dump_xyz.h ../error.h ../memory.h
 dump_movie.o : ../dump_movie.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../dump_image.h ../dump_custom.h ../lmpwindows.h ../dump.h ../lmptype.h ../dump_movie.h ../comm.h ../error.h
 dump_local.o : ../dump_local.cpp ../force.h ../pointers.h ../lammps.h ../exceptions.h ../update.h ../fix.h ../lmpwindows.h ../dump.h ../modify.h ../lmptype.h ../domain.h ../input.h ../dump_local.h ../error.h ../compute.h ../memory.h

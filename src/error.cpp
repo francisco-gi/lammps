@@ -11,13 +11,18 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
-#include "error.h"
+
 #include <mpi.h>
 #include <cstdlib>
 #include <cstring>
+#include "error.h"
+#include "error_special.h"	// added after liggghts
 #include "universe.h"
 #include "output.h"
 #include "input.h"
+#include "fix.h"		// added after liggghts because of fix_error
+
+
 
 #if defined(LAMMPS_EXCEPTIONS)
 #include "update.h"
@@ -40,12 +45,23 @@ static const char *truncpath(const char *path)
 }
 
 /* ---------------------------------------------------------------------- */
+// second argument added after liggghts
 
-Error::Error(LAMMPS *lmp) : Pointers(lmp) {
+Error::Error(LAMMPS *lmp) : Pointers(lmp),
+  specialMessages_(*new SpecialMessages(lmp)) {
 #ifdef LAMMPS_EXCEPTIONS
   last_error_message = NULL;
   last_error_type = ERROR_NONE;
 #endif
+}
+
+
+/* ---------------------------------------------------------------------- */
+// added after liggghts, I have still to call it somewhere
+
+Error::~Error()
+{
+    delete &specialMessages_;
 }
 
 /* ----------------------------------------------------------------------
@@ -177,6 +193,61 @@ void Error::all(const char *file, int line, const char *str)
   exit(1);
 #endif
 }
+
+
+
+/* Imported from liggghts */
+/* ----------------------------------------------------------------------
+   similar to Error::all
+   called by by fix constructors so fixes identify themselves correctly
+   even if derived class
+------------------------------------------------------------------------- */
+
+void Error::fix_error(const char *file, int line, Fix *fix,const char *str)
+{
+  fix_error(file, line, fix, fix->style,str);
+}
+
+void Error::fix_error(const char *file, int line, Fix *fix, const char *fixstylestr,const char *str)
+{
+  MPI_Barrier(world);
+
+  int me;
+  MPI_Comm_rank(world,&me);
+
+  if (me == 0)
+  {
+    if(strlen(str) > 2)
+    {
+        if (screen) fprintf(screen,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fixstylestr,fix->id,str,file,line);
+        if (logfile) fprintf(logfile,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fixstylestr,fix->id,str,file,line);
+    }
+    else
+    {
+        if (screen) fprintf(screen,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fixstylestr,fix->id,file,line);
+        if (logfile) fprintf(logfile,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fixstylestr,fix->id,file,line);
+    }
+
+    const char * special_msg = specialMessages_.generate_message();
+    if(special_msg)
+    {
+        if (screen) fprintf(screen,"%s (%s:%d)\n",special_msg,file,line);
+        if (logfile) fprintf(logfile," %s (%s:%d)\n",special_msg,file,line);
+    }
+  }
+
+  if (output) delete output;
+  if (screen && screen != stdout) fclose(screen);
+  if (logfile) fclose(logfile);
+
+  if (universe->nworlds > 1) MPI_Abort(universe->uworld,1);
+  MPI_Finalize();
+  exit(1);
+}
+
+
+
+
 
 /* ----------------------------------------------------------------------
    called by one proc in world

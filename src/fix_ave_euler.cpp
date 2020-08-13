@@ -46,7 +46,7 @@
 #include "fix_ave_euler.h"
 //#include "fix_multisphere.h"
 #include "compute_stress_atom.h"
-#include "math_extra.h"
+#include "math_extra.h"			// modified from math_extra_liggghts.h to math_extra.h
 #include "atom.h"
 #include "force.h"
 #include "domain.h"
@@ -57,8 +57,10 @@
 #include "random_park.h"
 #include "memory.h"
 #include "error.h"
+#include "comm.h"
 
 #define BIG 1000000000
+#define INVOKED_PERATOM 8 
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
