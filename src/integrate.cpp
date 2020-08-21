@@ -19,32 +19,52 @@
 #include "modify.h"
 #include "compute.h"
 
+
+#include <iostream>
+
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
 Integrate::Integrate(LAMMPS *lmp, int /*narg*/, char **/*arg*/) : Pointers(lmp)
 {
+
+printf("\n\nIntegrate::Integrate\n\n");
+
+
   elist_global = elist_atom = NULL;
   vlist_global = vlist_atom = cvlist_atom = NULL;
   external_force_clear = 0;
+
+printf("\n\nIntegrate::Integrate  -  Concluded\n\n");
+
+
 }
 
 /* ---------------------------------------------------------------------- */
 
 Integrate::~Integrate()
 {
+printf("\n\nIntegrate::~Integrate\n\n");
+
+
   delete [] elist_global;
   delete [] elist_atom;
   delete [] vlist_global;
   delete [] vlist_atom;
   delete [] cvlist_atom;
+
+printf("\n\nIntegrate::~Integrate  -  Concluded\n\n");
+
 }
 
 /* ---------------------------------------------------------------------- */
 
 void Integrate::init()
 {
+
+printf("\n\nIntegrate::init\n\n");
+
   update->atimestep = update->ntimestep;
 
   // allow pair and Kspace compute() to be turned off via modify flags
@@ -53,6 +73,9 @@ void Integrate::init()
   else pair_compute_flag = 0;
   if (force->kspace && force->kspace->compute_flag) kspace_compute_flag = 1;
   else kspace_compute_flag = 0;
+
+printf("\n\nIntegrate::init  -  Concluded\n\n");
+
 
   // should add checks:
   // for any acceleration package that has its own integrate/minimize
@@ -69,6 +92,9 @@ void Integrate::init()
 
 void Integrate::ev_setup()
 {
+
+printf("\n\nIntegrate::ev_setup\n\n");
+
   delete [] elist_global;
   delete [] elist_atom;
   delete [] vlist_global;
@@ -99,13 +125,17 @@ void Integrate::ev_setup()
     if (modify->compute[i]->peflag)
       elist_global[nelist_global++] = modify->compute[i];
     if (modify->compute[i]->peatomflag)
-      elist_atom[nelist_atom++] = modify->compute[i];
+      elist_atom[nelist_atom++] = modify->compute[i];printf("\n\nIntegrate::init\n\n");
+
     if (modify->compute[i]->pressflag)
       vlist_global[nvlist_global++] = modify->compute[i];
     if (modify->compute[i]->pressatomflag & 1)
       vlist_atom[nvlist_atom++] = modify->compute[i];
     if (modify->compute[i]->pressatomflag & 2)
       cvlist_atom[ncvlist_atom++] = modify->compute[i];
+
+printf("\n\nIntegrate::ev_setup  -  Concluded\n\n");
+
   }
 }
 
@@ -130,6 +160,9 @@ void Integrate::ev_setup()
 
 void Integrate::ev_set(bigint ntimestep)
 {
+
+printf("\n\nIntegrate::ev_set\n\n");
+
   int i,flag;
 
   flag = 0;
@@ -169,4 +202,7 @@ void Integrate::ev_set(bigint ntimestep)
   if (vflag_global) update->vflag_global = ntimestep;
   if (vflag_atom || cvflag_atom) update->vflag_atom = ntimestep;
   vflag = vflag_global + vflag_atom + cvflag_atom;
+
+printf("\n\nIntegrate::ev_set  -  Concluded\n\n");
+
 }

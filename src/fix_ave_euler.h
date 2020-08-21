@@ -62,7 +62,7 @@ class FixAveEuler : public Fix {
   FixAveEuler(class LAMMPS *, int, char **);
   ~FixAveEuler();
 
-  void post_create();
+  void post_constructor();
   int setmask();
   void init();
   void setup(int vflag);

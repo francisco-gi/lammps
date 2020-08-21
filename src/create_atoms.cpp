@@ -38,6 +38,9 @@
 #include "error.h"
 #include "memory.h"
 
+
+#include <iostream>
+
 using namespace LAMMPS_NS;
 using namespace MathConst;
 
@@ -339,6 +342,9 @@ void CreateAtoms::command(int narg, char **arg)
     sublo[1] = domain->sublo_lamda[1]; subhi[1] = domain->subhi_lamda[1];
     sublo[2] = domain->sublo_lamda[2]; subhi[2] = domain->subhi_lamda[2];
   }
+
+std::cout << sublo << "\n" << subhi << std::endl;
+std::cout << sublo << "\n" << subhi << std::endl;
 
   if (style == BOX || style == REGION) {
     if (comm->layout != Comm::LAYOUT_TILED) {

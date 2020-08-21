@@ -31,6 +31,9 @@
 #include "timer.h"
 #include "error.h"
 
+
+#include <iostream>
+
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
@@ -44,6 +47,12 @@ Verlet::Verlet(LAMMPS *lmp, int narg, char **arg) :
 
 void Verlet::init()
 {
+printf("\n");
+printf("******************************\n");
+printf("VERLET::INIT\n");
+printf("******************************\n");
+printf("\n");
+
   Integrate::init();
 
   // warn if no fixes
@@ -84,6 +93,12 @@ void Verlet::init()
 
 void Verlet::setup(int flag)
 {
+printf("\n");
+printf("******************************\n");
+printf("VERLET::SETUP\n");
+printf("******************************\n");
+printf("\n");
+
   if (comm->me == 0 && screen) {
     fprintf(screen,"Setting up Verlet run ...\n");
     if (flag) {
@@ -102,7 +117,7 @@ void Verlet::setup(int flag)
   // setup domain, communication and neighboring
   // acquire ghosts
   // build neighbor lists
-
+printf("\tVerlet in setup: setup domain, communication and neighboring\n");
   atom->setup();
   modify->setup_pre_exchange();
   if (triclinic) domain->x2lamda(atom->nlocal);
@@ -122,7 +137,7 @@ void Verlet::setup(int flag)
   neighbor->ncalls = 0;
 
   // compute all forces
-
+printf("\tVerlet In setup: compute forces - setup and clear\n");
   force->setup();
   ev_set(update->ntimestep);
   force_clear();
@@ -143,13 +158,19 @@ void Verlet::setup(int flag)
     if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
     else force->kspace->compute_dummy(eflag,vflag);
   }
-
+printf("\t Verlet In setup: modify->setup_pre_reverse\n");
   modify->setup_pre_reverse(eflag,vflag);
   if (force->newton) comm->reverse_comm();
-
+std::cout << "\t\tvflag\t\t" << vflag << std::endl ;
+printf("\t Verlet In setup: modify->setup\n");
   modify->setup(vflag);
+printf("\t Verlet In setup: output->setup\n");
   output->setup(flag);
+printf("\t Verlet In setup: update->setupflag\n");
   update->setupflag = 0;
+printf("VERLET::SETUP  -  END\n");
+printf("******************************\n");
+printf("\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -160,6 +181,12 @@ void Verlet::setup(int flag)
 
 void Verlet::setup_minimal(int flag)
 {
+printf("\n");
+printf("******************************\n");
+printf("VERLET::SETUP_MINIMAL\n");
+printf("******************************\n");
+printf("\n");
+
   update->setupflag = 1;
 
   // setup domain, communication and neighboring
@@ -219,6 +246,12 @@ void Verlet::setup_minimal(int flag)
 
 void Verlet::run(int n)
 {
+printf("\n");
+printf("******************************\n");
+printf("VERLET::RUN\n");
+printf("******************************\n");
+printf("\n");
+
   bigint ntimestep;
   int nflag,sortflag;
 
@@ -348,15 +381,27 @@ void Verlet::run(int n)
       timer->stamp(Timer::OUTPUT);
     }
   }
+printf("VERLET::RUN  -  END\n");
+printf("******************************\n");
+printf("\n");
 }
 
 /* ---------------------------------------------------------------------- */
 
 void Verlet::cleanup()
 {
+printf("\n");
+printf("******************************\n");
+printf("VERLET::CLENUP\n");
+printf("******************************\n");
+printf("\n");
+
   modify->post_run();
   domain->box_too_small_check();
   update->update_time();
+printf("VERLET::CLENUP  -  END\n");
+printf("******************************\n");
+printf("\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -366,6 +411,12 @@ void Verlet::cleanup()
 
 void Verlet::force_clear()
 {
+printf("\n");
+printf("******************************\n");
+printf("VERLET::FORCE_CLEAR\n");
+printf("******************************\n");
+printf("\n");
+
   size_t nbytes;
 
   if (external_force_clear) return;
@@ -409,4 +460,7 @@ void Verlet::force_clear()
       }
     }
   }
+printf("VERLET::FORCE_CLEAR  -  END\n");
+printf("******************************\n");
+printf("\n");
 }
