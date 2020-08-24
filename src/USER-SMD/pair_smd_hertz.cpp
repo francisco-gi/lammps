@@ -127,14 +127,14 @@ void PairHertz::compute(int eflag, int vflag) {
                         dely = ytmp - x[j][1];
                         delz = ztmp - x[j][2];
 						// // double delxx = delx;
-						double delyy = dely;
-						double delzz = delz;
-						
-						// If condition added by me.
-						if (periodic) {
-							printf("\n\nPBC-CHECK\n\n");
-							domain->minimum_image(delx, dely, delz);
-						}
+//						double delyy = dely;
+//						double delzz = delz;
+//						
+//						// If condition added by me.
+//						if (periodic) {
+//							printf("\n\nPBC-CHECK\n\n");
+//							domain->minimum_image(delx, dely, delz);
+//						}
 				
                         // double rsqq = delxx * delxx + delyy * delyy + delzz * delzz;
                         rsq = delx * delx + dely * dely + delz * delz;
