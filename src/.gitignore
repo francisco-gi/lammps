@@ -4,6 +4,9 @@
 /Make.py.last
 /lmp_*
 
+/*.o
+/Obj_*
+
 /style_*.h
 /packages_*.h
 /lmpinstalledpkgs.h
