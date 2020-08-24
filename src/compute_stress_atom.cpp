@@ -30,6 +30,8 @@
 
 using namespace LAMMPS_NS;
 
+#include <iostream>
+
 enum{NOBIAS,BIAS};
 
 /* ---------------------------------------------------------------------- */
@@ -38,6 +40,14 @@ ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg),
   id_temp(NULL), stress(NULL)
 {
+
+std::cout << narg << "\tnarg\n";
+int cont = 0;
+while(cont < narg)
+  {
+	std::cout << arg[cont] << "\n";
+	cont++;
+  }
   if (narg < 4) error->all(FLERR,"Illegal compute stress/atom command");
 
   peratom_flag = 1;
@@ -45,6 +55,8 @@ ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int narg, char **arg) :
   pressatomflag = 1;
   timeflag = 1;
   comm_reverse = 6;
+
+std::cout << arg[3] << "\n";
 
   // store temperature ID used by stress computation
   // insure it is valid for temperature computation

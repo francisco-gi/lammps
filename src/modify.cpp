@@ -29,6 +29,8 @@
 #include "error.h"
 #include "utils.h"
 
+#include <iostream>
+
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
@@ -1150,6 +1152,16 @@ int Modify::check_rigid_list_overlap(int *select)
 
 void Modify::add_compute(int narg, char **arg, int trysuffix)
 {
+
+
+std::cout << "Modify::add_compute" << std::endl;
+
+
+std::cout << "ARGS :" << std::endl;
+
+std::cout << arg[0] << "\t"<< arg[1] << std::endl;
+// "\t" << arg[2] <<"\t" << arg[3] <<"\t" << std::endl;
+
   if (narg < 3) error->all(FLERR,"Illegal compute command");
 
   // error check
@@ -1171,8 +1183,14 @@ void Modify::add_compute(int narg, char **arg, int trysuffix)
 
   compute[ncompute] = NULL;
 
+
+std::cout << trysuffix << std::endl;
+std::cout << lmp->suffix_enable << std::endl;
+
+
   if (trysuffix && lmp->suffix_enable) {
     if (lmp->suffix) {
+std::cout << lmp->suffix << std::endl;
       int n = strlen(arg[2])+strlen(lmp->suffix)+2;
       char *estyle = new char[n];
       sprintf(estyle,"%s/%s",arg[2],lmp->suffix);
@@ -1184,6 +1202,7 @@ void Modify::add_compute(int narg, char **arg, int trysuffix)
       } else delete[] estyle;
     }
     if (compute[ncompute] == NULL && lmp->suffix2) {
+std::cout << lmp->suffix2 << std::endl;
       int n = strlen(arg[2])+strlen(lmp->suffix2)+2;
       char *estyle = new char[n];
       sprintf(estyle,"%s/%s",arg[2],lmp->suffix2);
@@ -1195,17 +1214,26 @@ void Modify::add_compute(int narg, char **arg, int trysuffix)
       } else delete[] estyle;
     }
   }
-
+std::cout << "Modify::add_compute  -  2 " << std::endl;
   if (compute[ncompute] == NULL &&
       compute_map->find(arg[2]) != compute_map->end()) {
+
+std::cout << "compute_map" << std::endl;
+
     ComputeCreator compute_creator = (*compute_map)[arg[2]];
+std::cout << "Modify::add_compute" << std::endl;
+
     compute[ncompute] = compute_creator(lmp,narg,arg);
+std::cout << "Modify::add_compute" << std::endl;
+
   }
 
   if (compute[ncompute] == NULL)
     error->all(FLERR,utils::check_packages_for_style("compute",arg[2],lmp).c_str());
 
   ncompute++;
+
+std::cout << "Modify::add_compute  -  Concluded" << std::endl;
 }
 
 /* ----------------------------------------------------------------------
@@ -1260,11 +1288,24 @@ void Modify::delete_compute(const char *id)
 
 int Modify::find_compute(const char *id)
 {
-  if(id==NULL) return -1;
+
+std::cout << "Modify::find_compute\t" << id << std::endl;
+
+  if(id==NULL)
+  { 
+	printf("Compute id not found\n");
+	return -1;
+  }
   int icompute;
   for (icompute = 0; icompute < ncompute; icompute++)
-    if (strcmp(id,compute[icompute]->id) == 0) break;
+{
+    std::cout << icompute << "\t" << compute[icompute]->id << "\tof\t"<< ncompute << "\tcompute" << std::endl;
+    if (strcmp(id,compute[icompute]->id) == 0){
+ 	printf("Compute id not found\n");
+ 	break;}
+}
   if (icompute == ncompute) return -1;
+std::cout << icompute << "\tof\t"<< ncompute << "\tcompute" << std::endl;
   return icompute;
 }
 

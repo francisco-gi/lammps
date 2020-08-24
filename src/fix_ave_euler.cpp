@@ -234,12 +234,12 @@ printf("\n\nFixAveEuler::~FixAveEuler - Completed\n\n");
 
 void FixAveEuler::post_constructor()
 {
-  printf("fix ave euler - post_create()\n");
+  printf("fix ave euler - post_constructor()\n");
   //  stress computation, just for pairwise contribution
   if(!compute_stress_)
   {
     printf("_______________________________________\n");
-    printf("IN POST_CREATE  -  COMP_STRESS_ already initialized\n");
+    printf("IN POST_CREATE  -  COMP_STRESS_ not initialized\n");
     printf("_______________________________________\n");
         
         const char* arg[4];
@@ -248,7 +248,10 @@ void FixAveEuler::post_constructor()
         arg[2]="stress/atom";
         arg[3]="pair";
 
+    printf("In post_constructor adding compute\n");
         modify->add_compute(4,(char**)arg);
+
+    printf("In post_constructor Compuite stress\n");
         compute_stress_ = static_cast<ComputeStressAtom*>(modify->compute[modify->find_compute(arg[0])]);
   }
 
