@@ -29,14 +29,14 @@ using namespace LAMMPS_NS;
 Integrate::Integrate(LAMMPS *lmp, int /*narg*/, char **/*arg*/) : Pointers(lmp)
 {
 
-printf("\n\nIntegrate::Integrate\n\n");
+//printf("\n\nIntegrate::Integrate\n\n");
 
 
   elist_global = elist_atom = NULL;
   vlist_global = vlist_atom = cvlist_atom = NULL;
   external_force_clear = 0;
 
-printf("\n\nIntegrate::Integrate  -  Concluded\n\n");
+//printf("\n\nIntegrate::Integrate  -  Concluded\n\n");
 
 
 }
@@ -45,7 +45,7 @@ printf("\n\nIntegrate::Integrate  -  Concluded\n\n");
 
 Integrate::~Integrate()
 {
-printf("\n\nIntegrate::~Integrate\n\n");
+//printf("\n\nIntegrate::~Integrate\n\n");
 
 
   delete [] elist_global;
@@ -54,7 +54,7 @@ printf("\n\nIntegrate::~Integrate\n\n");
   delete [] vlist_atom;
   delete [] cvlist_atom;
 
-printf("\n\nIntegrate::~Integrate  -  Concluded\n\n");
+//printf("\n\nIntegrate::~Integrate  -  Concluded\n\n");
 
 }
 
@@ -63,7 +63,7 @@ printf("\n\nIntegrate::~Integrate  -  Concluded\n\n");
 void Integrate::init()
 {
 
-printf("\n\nIntegrate::init\n\n");
+//printf("\n\nIntegrate::init\n\n");
 
   update->atimestep = update->ntimestep;
 
@@ -74,7 +74,7 @@ printf("\n\nIntegrate::init\n\n");
   if (force->kspace && force->kspace->compute_flag) kspace_compute_flag = 1;
   else kspace_compute_flag = 0;
 
-printf("\n\nIntegrate::init  -  Concluded\n\n");
+//printf("\n\nIntegrate::init  -  Concluded\n\n");
 
 
   // should add checks:
@@ -93,88 +93,88 @@ printf("\n\nIntegrate::init  -  Concluded\n\n");
 void Integrate::ev_setup()
 {
 
-printf("\n\nIntegrate::ev_setup\n\n");
+//	printf("\n\nIntegrate::ev_setup\n\n");
 
-  delete [] elist_global;
-  delete [] elist_atom;
-  delete [] vlist_global;
-  delete [] vlist_atom;
-  delete [] cvlist_atom;
-  elist_global = elist_atom = NULL;
-  vlist_global = vlist_atom = cvlist_atom = NULL;
+	  delete [] elist_global;
+	  delete [] elist_atom;
+	  delete [] vlist_global;
+	  delete [] vlist_atom;
+	  delete [] cvlist_atom;
+	  elist_global = elist_atom = NULL;
+	  vlist_global = vlist_atom = cvlist_atom = NULL;
 
-  nelist_global = nelist_atom = 0;
-  nvlist_global = nvlist_atom = ncvlist_atom = 0;
-  for (int i = 0; i < modify->ncompute; i++) {
-    if (modify->compute[i]->peflag) nelist_global++;
-    if (modify->compute[i]->peatomflag) nelist_atom++;
-    if (modify->compute[i]->pressflag) nvlist_global++;
-    if (modify->compute[i]->pressatomflag & 1) nvlist_atom++;
-    if (modify->compute[i]->pressatomflag & 2) ncvlist_atom++;
-  }
+	  nelist_global = nelist_atom = 0;
+	  nvlist_global = nvlist_atom = ncvlist_atom = 0;
+	  for (int i = 0; i < modify->ncompute; i++) {
+	    if (modify->compute[i]->peflag) nelist_global++;
+	    if (modify->compute[i]->peatomflag) nelist_atom++;
+	    if (modify->compute[i]->pressflag) nvlist_global++;
+	    if (modify->compute[i]->pressatomflag & 1) nvlist_atom++;
+	    if (modify->compute[i]->pressatomflag & 2) ncvlist_atom++;
+	  }
 
-  if (nelist_global) elist_global = new Compute*[nelist_global];
-  if (nelist_atom) elist_atom = new Compute*[nelist_atom];
-  if (nvlist_global) vlist_global = new Compute*[nvlist_global];
-  if (nvlist_atom) vlist_atom = new Compute*[nvlist_atom];
-  if (ncvlist_atom) cvlist_atom = new Compute*[ncvlist_atom];
+	  if (nelist_global) elist_global = new Compute*[nelist_global];
+	  if (nelist_atom) elist_atom = new Compute*[nelist_atom];
+	  if (nvlist_global) vlist_global = new Compute*[nvlist_global];
+	  if (nvlist_atom) vlist_atom = new Compute*[nvlist_atom];
+	  if (ncvlist_atom) cvlist_atom = new Compute*[ncvlist_atom];
 
-  nelist_global = nelist_atom = 0;
-  nvlist_global = nvlist_atom = ncvlist_atom = 0;
-  for (int i = 0; i < modify->ncompute; i++) {
-    if (modify->compute[i]->peflag)
-      elist_global[nelist_global++] = modify->compute[i];
-    if (modify->compute[i]->peatomflag)
-      elist_atom[nelist_atom++] = modify->compute[i];printf("\n\nIntegrate::init\n\n");
+	  nelist_global = nelist_atom = 0;
+	  nvlist_global = nvlist_atom = ncvlist_atom = 0;
+	  for (int i = 0; i < modify->ncompute; i++) {
+	    if (modify->compute[i]->peflag)
+	      elist_global[nelist_global++] = modify->compute[i];
+	    if (modify->compute[i]->peatomflag)
+	      elist_atom[nelist_atom++] = modify->compute[i];
 
-    if (modify->compute[i]->pressflag)
-      vlist_global[nvlist_global++] = modify->compute[i];
-    if (modify->compute[i]->pressatomflag & 1)
-      vlist_atom[nvlist_atom++] = modify->compute[i];
-    if (modify->compute[i]->pressatomflag & 2)
-      cvlist_atom[ncvlist_atom++] = modify->compute[i];
+	    if (modify->compute[i]->pressflag)
+	      vlist_global[nvlist_global++] = modify->compute[i];
+	    if (modify->compute[i]->pressatomflag & 1)
+	      vlist_atom[nvlist_atom++] = modify->compute[i];
+	    if (modify->compute[i]->pressatomflag & 2)
+	      cvlist_atom[ncvlist_atom++] = modify->compute[i];
 
-printf("\n\nIntegrate::ev_setup  -  Concluded\n\n");
+//	printf("\n\nIntegrate::ev_setup  -  Concluded\n\n");
 
-  }
-}
+	  }
+	}
 
-/* ----------------------------------------------------------------------
-   set eflag,vflag for current iteration
-   invoke matchstep() on all timestep-dependent computes to clear their arrays
-   eflag/vflag based on computes that need info on this ntimestep
-   eflag = 0 = no energy computation
-   eflag = 1 = global energy only
-   eflag = 2 = per-atom energy only
-   eflag = 3 = both global and per-atom energy
-   vflag = 0 = no virial computation (pressure)
-   vflag = 1 = global virial with pair portion via sum of pairwise interactions
-   vflag = 2 = global virial with pair portion via F dot r including ghosts
-   vflag = 4 = per-atom virial only
-   vflag = 5 or 6 = both global and per-atom virial
-   vflag = 8 = per-atom centroid virial only
-   vflag = 9 or 10 = both global and per-atom centroid virial
-   vflag = 12 = both per-atom virial and per-atom centroid virial
-   vflag = 13 or 15 = global, per-atom virial and per-atom centroid virial
-------------------------------------------------------------------------- */
+	/* ----------------------------------------------------------------------
+	   set eflag,vflag for current iteration
+	   invoke matchstep() on all timestep-dependent computes to clear their arrays
+	   eflag/vflag based on computes that need info on this ntimestep
+	   eflag = 0 = no energy computation
+	   eflag = 1 = global energy only
+	   eflag = 2 = per-atom energy only
+	   eflag = 3 = both global and per-atom energy
+	   vflag = 0 = no virial computation (pressure)
+	   vflag = 1 = global virial with pair portion via sum of pairwise interactions
+	   vflag = 2 = global virial with pair portion via F dot r including ghosts
+	   vflag = 4 = per-atom virial only
+	   vflag = 5 or 6 = both global and per-atom virial
+	   vflag = 8 = per-atom centroid virial only
+	   vflag = 9 or 10 = both global and per-atom centroid virial
+	   vflag = 12 = both per-atom virial and per-atom centroid virial
+	   vflag = 13 or 15 = global, per-atom virial and per-atom centroid virial
+	------------------------------------------------------------------------- */
 
-void Integrate::ev_set(bigint ntimestep)
-{
+	void Integrate::ev_set(bigint ntimestep)
+	{
 
-printf("\n\nIntegrate::ev_set\n\n");
+//	printf("\n\nIntegrate::ev_set\n\n");
 
-  int i,flag;
+	  int i,flag;
 
-  flag = 0;
-  int eflag_global = 0;
-  for (i = 0; i < nelist_global; i++)
-    if (elist_global[i]->matchstep(ntimestep)) flag = 1;
-  if (flag) eflag_global = 1;
+	  flag = 0;
+	  int eflag_global = 0;
+	  for (i = 0; i < nelist_global; i++)
+	    if (elist_global[i]->matchstep(ntimestep)) flag = 1;
+	  if (flag) eflag_global = 1;
 
-  flag = 0;
-  int eflag_atom = 0;
-  for (i = 0; i < nelist_atom; i++)
-    if (elist_atom[i]->matchstep(ntimestep)) flag = 1;
+	  flag = 0;
+	  int eflag_atom = 0;
+	  for (i = 0; i < nelist_atom; i++)
+	    if (elist_atom[i]->matchstep(ntimestep)) flag = 1;
   if (flag) eflag_atom = 2;
 
   if (eflag_global) update->eflag_global = ntimestep;
@@ -203,6 +203,6 @@ printf("\n\nIntegrate::ev_set\n\n");
   if (vflag_atom || cvflag_atom) update->vflag_atom = ntimestep;
   vflag = vflag_global + vflag_atom + cvflag_atom;
 
-printf("\n\nIntegrate::ev_set  -  Concluded\n\n");
+//printf("\n\nIntegrate::ev_set  -  Concluded\n\n");
 
 }
