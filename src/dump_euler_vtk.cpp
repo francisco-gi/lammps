@@ -85,8 +85,8 @@ DumpEulerVTK::~DumpEulerVTK()
 void DumpEulerVTK::init_style()
 {
   fix_euler_ = static_cast<FixAveEuler*>(modify->find_fix_style_strict("ave/euler",0));
-//  if(!fix_euler_)
-//    error->all(FLERR,"Illegal dump euler/vtk command, need a fix ave/euler");
+  if(!fix_euler_)
+    error->all(FLERR,"Illegal dump euler/vtk command, need a fix ave/euler");
 
   // multifile=1;             // 0 = one big file, 1 = one file per timestep
   // multiproc=0;             // 0 = proc 0 writes for all, 1 = one file/proc
@@ -101,7 +101,7 @@ void DumpEulerVTK::init_style()
     error->all(FLERR,"Can not dump VTK files in binary mode");
 
   // node center (3), av vel (3), volume fraction, stress, radius
-  size_one = 9;
+  size_one = 9; //TODO: this should be auto-calculated!
 
   delete [] format;
 }
@@ -165,7 +165,7 @@ printf("DumpEulerVTK::pack\n");  int m = 0;
 
     buf[m++] = fix_euler_->cell_vol_fr(i);
     buf[m++] = fix_euler_->cell_radius(i);
-//    buf[m++] = fix_euler_->cell_pressure(i);
+    buf[m++] = fix_euler_->cell_pressure(i);
   }
   return ;
 }
@@ -252,13 +252,13 @@ printf("DumpEulerVTK::write_data_ascii\n");
   }
   buf_pos++;
 
-//  fprintf(fp,"SCALARS pressure float 1\nLOOKUP_TABLE default\n");
-//  m = buf_pos;
-//  for (int i = 0; i < n; i++)
-//  {
-//      fprintf(fp,"%f\n",mybuf[m]);
-//      m += size_one;
-//  }
+  fprintf(fp,"SCALARS pressure float 1\nLOOKUP_TABLE default\n");
+  m = buf_pos;
+  for (int i = 0; i < n; i++)
+  {
+      fprintf(fp,"%f\n",mybuf[m]);
+      m += size_one;
+  }
   buf_pos++;
 
   // footer not needed
