@@ -6,7 +6,9 @@
 
 
 
-Obj_*
+Obj_serial/*.o
+Obj_mpi/*.o
+
 /*.o
 
 /style_*.h
@@ -18,9 +20,9 @@ Obj_*
 /*_gpu.cpp
 /*_intel.h
 /*_intel.cpp
-/*_kokkos.h
+#/*_kokkos.h
 /*_kokkos_impl.h
-/*_kokkos.cpp
+#/*_kokkos.cpp
 /*_omp.h
 /*_omp.cpp
 /*_opt.h
