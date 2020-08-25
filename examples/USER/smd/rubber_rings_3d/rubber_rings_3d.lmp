@@ -98,11 +98,11 @@ compute         eint all smd/internal/energy
 compute         alleint all reduce sum c_eint
 variable        etot equal c_alleint+ke+pe
 
-dump            dump_id all custom ${dumpFreq} dump.*.liggghts id type x y z vx vy vz &
+dump            dump_id all custom ${dumpFreq} dump/dump.*.liggghts id type x y z vx vy vz &
                 c_S[1] c_S[2] c_S[3] c_S[4] c_S[5] c_S[6] c_S[7] c_nn c_cr proc c_p radius
 dump_modify     dump_id first yes
 
-dump            dump_euler all euler/vtk ${dumpFreq} dump.euler.*.vtk 
+dump            dump_euler all euler/vtk ${dumpFreq} dump/dump.euler.*.vtk 
 
 dump_modify     dump_euler first yes
 ####################################################################################################
