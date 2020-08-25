@@ -249,15 +249,17 @@ void FixAveEuler::post_constructor()
         arg[3]="pair";
 
     printf("In post_constructor adding compute\n");
-        modify->add_compute(4,(char**)arg);
+//        modify->add_compute(4,(char**)arg);
 
-    printf("In post_constructor Compuite stress\n");
-        compute_stress_ = static_cast<ComputeStressAtom*>(modify->compute[modify->find_compute(arg[0])]);
+    printf("In post_constructor Compute stress\n");
+//        compute_stress_ = static_cast<ComputeStressAtom*>(modify->compute[modify->find_compute(arg[0])]);
   }
 
   // ensure that the compute is calculated in the first time step
+    printf("In post_constructor - update timestep\n");
   bigint nfirst = (update->ntimestep/nevery)*nevery + nevery;
-  compute_stress_->addstep(nfirst);
+    printf("In post_constructor Compute stress add step\n");
+//  compute_stress_->addstep(nfirst);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -661,27 +663,27 @@ printf("modify->clearstep_compute()\n");
 
 std::cout << INVOKED_PERATOM << std::endl;
 std::cout << compute_stress_ << std::endl;
-std::cout << compute_stress_->invoked_flag << std::endl;
+//std::cout << compute_stress_->invoked_flag << std::endl;
     // invoke compute if not previously invoked
-printf("FixAveEuler::calculate_eu  -  Invoke compute\n");
-    
-std::cout << compute_stress_->invoked_flag << "\t" << INVOKED_PERATOM << std::endl;
-
-    if (!(compute_stress_->invoked_flag & INVOKED_PERATOM)) {
-printf("No compute_stress_->invoked_flag & INVOKED_PERATOM\n");
-std::cout << compute_stress_->invoked_flag << "\t" << INVOKED_PERATOM << std::endl;
-        compute_stress_->compute_peratom();
-        compute_stress_->invoked_flag |= INVOKED_PERATOM;
-    }
-
-printf("FixAveEuler::calculate_eu  -  forward comm\n");
-    // forward comm per-particle stress from compute so neighs have it
-    comm->forward_comm_compute(compute_stress_);
-
-    // need to get pointer here since compute_peratom() may realloc
-printf("FixAveEuler::calculate_eu  -  getting pointer to stress\n");
-    double **stress_atom = compute_stress_->array_atom;
-
+//printf("FixAveEuler::calculate_eu  -  Invoke compute\n");
+//    
+////std::cout << compute_stress_->invoked_flag << "\t" << INVOKED_PERATOM << std::endl;
+//
+//    if (!(compute_stress_->invoked_flag & INVOKED_PERATOM)) {
+//printf("No compute_stress_->invoked_flag & INVOKED_PERATOM\n");
+//std::cout << compute_stress_->invoked_flag << "\t" << INVOKED_PERATOM << std::endl;
+//        compute_stress_->compute_peratom();
+//        compute_stress_->invoked_flag |= INVOKED_PERATOM;
+//    }
+//
+//printf("FixAveEuler::calculate_eu  -  forward comm\n");
+//    // forward comm per-particle stress from compute so neighs have it
+//    comm->forward_comm_compute(compute_stress_);
+//
+//    // need to get pointer here since compute_peratom() may realloc
+//printf("FixAveEuler::calculate_eu  -  getting pointer to stress\n");
+//    double **stress_atom = compute_stress_->array_atom;
+//
     // loop all binned particles
     // each particle can contribute to the cell that it has been binned
     // optionally plus its 26 neighs
@@ -754,16 +756,16 @@ printf("FixAveEuler::calculate_eu  -  Loop on all binned particles\n");
         // need v before can calculate stress
         // stress is molecular diffusion + contact forces
 
-        for(int iatom = cellhead_[icell/*+stencil*/]; iatom >= 0; iatom = cellptr_[iatom])
-        {
-            stress_[icell][1] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][0]-v_av_[icell][0]) + stress_atom[iatom][0];
-            stress_[icell][2] += -rmass[iatom]*(v[iatom][1]-v_av_[icell][1])*(v[iatom][1]-v_av_[icell][1]) + stress_atom[iatom][1];
-            stress_[icell][3] += -rmass[iatom]*(v[iatom][2]-v_av_[icell][2])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][2];
-            stress_[icell][4] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][1]-v_av_[icell][1]) + stress_atom[iatom][3];
-            stress_[icell][5] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][4];
-            stress_[icell][6] += -rmass[iatom]*(v[iatom][1]-v_av_[icell][1])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][5]; 
-        }
-        stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
+//        for(int iatom = cellhead_[icell/*+stencil*/]; iatom >= 0; iatom = cellptr_[iatom])
+//        {
+//            stress_[icell][1] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][0]-v_av_[icell][0]) + stress_atom[iatom][0];
+//            stress_[icell][2] += -rmass[iatom]*(v[iatom][1]-v_av_[icell][1])*(v[iatom][1]-v_av_[icell][1]) + stress_atom[iatom][1];
+//            stress_[icell][3] += -rmass[iatom]*(v[iatom][2]-v_av_[icell][2])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][2];
+//            stress_[icell][4] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][1]-v_av_[icell][1]) + stress_atom[iatom][3];
+//            stress_[icell][5] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][4];
+//            stress_[icell][6] += -rmass[iatom]*(v[iatom][1]-v_av_[icell][1])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][5]; 
+//        }
+//        stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
         if(weight_[icell] < eps_ntry)
             vectorZeroizeN(stress_[icell],7);
         else
@@ -777,8 +779,8 @@ printf("FixAveEuler::calculate_eu  -  MPI_SUM\n");
         MPI_Sum_Vector(&(stress_[0][0]),7*ncells_,world);
 
         // recalc pressure based on allreduced stress
-        for(int icell = 0; icell < ncells_; icell++)
-            stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
+//        for(int icell = 0; icell < ncells_; icell++)
+//            stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
     }
 
     // wrap with clear/add

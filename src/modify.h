@@ -18,6 +18,10 @@
 #include <map>
 #include <string>
 
+
+#include "fix.h"
+
+
 namespace LAMMPS_NS {
 
 class Modify : protected Pointers {
@@ -120,6 +124,12 @@ class Modify : protected Pointers {
   void restart_deallocate(int);
 
   bigint memory_usage();
+
+
+
+
+ class Fix* find_fix_style_strict(const char *style, int rank);
+
 
  protected:
 
