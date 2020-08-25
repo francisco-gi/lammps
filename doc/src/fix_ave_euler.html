@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix ave/euler command &mdash; LIGGGHTS v4.X documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v4.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#what-is-liggghts-r-tug">1.1. What is LIGGGHTS(R)-TUG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-public-vs-liggghts-premium">1.2. LIGGGHTS-PUBLIC VS. LIGGGHTS-PREMIUM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#history">1.3. History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-tug-features">1.4. LIGGGHTS(R)-TUG features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-tug-general-features">1.5. LIGGGHTS(R)-TUG General features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-tug-model-features-liggghts-public-features">1.6. LIGGGHTS(R)-TUG Model features: LIGGGHTS-PUBLIC features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-tug-model-features-additional-features-for-liggghts-r-tug">1.7. LIGGGHTS(R)-TUG Model features: Additional features for LIGGGHTS(R)-TUG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#open-source-distribution">1.8. Open source distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#acknowledgments-and-citations">1.9. Acknowledgments and citations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#how-to-obtain-liggghts-r-tug">2.1. How to obtain LIGGGHTS(R)-TUG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#making-liggghts-r-tug">2.2. Making LIGGGHTS(R)-TUG</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#read-this-first">2.2.1. <strong>Read this first:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#steps-to-build-a-liggghts-r-tug-executable">2.2.2. <strong>Steps to build a LIGGGHTS(R)-TUG executable:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#advanced-building-using-custom-makefiles">2.2.3. <strong>Advanced building using custom makefiles</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#errors-that-can-occur-when-making-liggghts-r-tug">2.2.4. <strong>Errors that can occur when making LIGGGHTS(R)-TUG:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#additional-build-tips">2.2.5. <strong>Additional build tips:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#building-for-a-mac">2.2.6. <strong>Building for a Mac:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#building-for-windows">2.2.7. <strong>Building for Windows:</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#making-liggghts-r-tug-with-optional-packages">2.3. Making LIGGGHTS(R)-TUG with optional packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#making-liggghts-r-tug-with-cmake-also-on-windows">2.4. Making LIGGGHTS(R)-TUG with cmake - also on Windows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#prerequisites">2.4.1. <strong>Prerequisites:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#installation">2.4.2. <strong>Installation:</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="Section_start.html#configure-using-cmake-in-the-terminal-cygwin-or-a-cmake-gui">2.4.2.1. Configure using CMake (in the terminal, cygwin or a cmake-gui)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Section_start.html#compile-the-executable">2.4.2.2. Compile the executable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Section_start.html#installation-optional">2.4.2.3. Installation (optional)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#building-liggghts-r-tug-via-the-make-py-script">2.5. Building LIGGGHTS(R)-TUG via the Make.py script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#building-liggghts-r-tug-as-a-library">2.6. Building LIGGGHTS(R)-TUG as a library</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#static-library">2.6.1. <strong>Static library:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#shared-library">2.6.2. <strong>Shared library:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#additional-requirement-for-using-a-shared-library">2.6.3. <strong>Additional requirement for using a shared library:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_start.html#calling-the-liggghts-r-tug-library">2.6.4. <strong>Calling the LIGGGHTS(R)-TUG library:</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#running-liggghts-r-tug">2.7. Running LIGGGHTS(R)-TUG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#command-line-options">2.8. Command-line options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#liggghts-r-tug-screen-output">2.9. LIGGGHTS(R)-TUG screen output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#liggghts-r-tug-input-script">3.1. LIGGGHTS(R)-TUG input script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#parsing-rules">3.2. Parsing rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#input-script-structure">3.3. Input script structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#an-example-input-script">3.4. An example input script</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#list-of-all-commands">4.1. List of all commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#bond-style-potentials">4.2. bond_style potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#compute-styles">4.3. compute styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#dump-styles">4.4. dump styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#fix-styles">4.5. fix styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#pair-style-potentials">4.6. pair_style potentials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#cohesion-commands">5.1. cohesion commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#model-commands">5.2. model commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#rolling-friction-commands">5.3. rolling_friction commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#surface-commands">5.4. surface commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#tangential-commands">5.5. tangential commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_mesh_modules.html#module-commands">6.1. module commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#restarting-a-simulation">8.1. Restarting a simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#d-simulations">8.2. 2d simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#running-multiple-simulations-from-one-input-script">8.3. Running multiple simulations from one input script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#granular-models">8.4. Granular models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#coupling-liggghts-r-tug-to-other-codes">8.5. Coupling LIGGGHTS(R)-TUG to other codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#visualizing-liggghts-r-tug-snapshots">8.6. Visualizing LIGGGHTS(R)-TUG snapshots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#triclinic-non-orthogonal-simulation-boxes">8.7. Triclinic (non-orthogonal) simulation boxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#output-from-liggghts-r-tug-status-dumps-computes-fixes-variables">8.8. Output from LIGGGHTS(R)-TUG (status, dumps, computes, fixes, variables)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#global-per-atom-local-data">8.8.1. Global/per-atom/local data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#scalar-vector-array-data">8.8.2. Scalar/vector/array data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#dump-file-output">8.8.3. Dump file output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#fixes-that-write-output-files">8.8.4. Fixes that write output files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#computes-that-process-output-quantities">8.8.5. Computes that process output quantities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#fixes-that-process-output-quantities">8.8.6. Fixes that process output quantities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#computes-that-generate-values-to-output">8.8.7. Computes that generate values to output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#fixes-that-generate-values-to-output">8.8.8. Fixes that generate values to output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#variables-that-generate-values-to-output">8.8.9. Variables that generate values to output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_howto.html#summary-table-of-output-options-and-data-flow-between-commands">8.8.10. Summary table of output options and data flow between commands</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#walls">8.9. Walls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#library-interface-to-liggghts-r-tug">8.10. Library interface to LIGGGHTS(R)-TUG</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_howto.html">How-to discussions specific for granular functinalities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="howto_liggghts_4.X_tutorial.html">1. How To LIGGGHTS(R)-TUG4.X vs. LIGGGHTS(R)-TUG3.X - syntax changes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="howto_liggghts_4.X_tutorial.html#introduction">1.1. Introduction:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="howto_liggghts_4.X_tutorial.html#commands-covered-by-this-tutorial">1.2. Commands covered by this tutorial:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="howto_liggghts_4.X_tutorial.html#changes-in-syntax-for-each-command">1.3. Changes in syntax for each command:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_howto.html#to-commands">To commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-TUG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#atom-styles">9.1. Atom styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#compute-styles">9.2. Compute styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#dump-styles">9.3. Dump styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#dump-custom-output-options">9.4. Dump custom output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#fix-styles">9.5. Fix styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#input-script-commands">9.6. Input script commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#pairwise-potentials">9.7. Pairwise potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#region-styles">9.8. Region styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#thermodynamic-output-options">9.9. Thermodynamic output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#variable-options">9.10. Variable options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#submitting-new-features-for-inclusion-in-liggghts-r-tug">9.11. Submitting new features for inclusion in LIGGGHTS(R)-TUG</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-TUG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#building-liggghts-r-tug-as-a-shared-library">10.1. Building LIGGGHTS(R)-TUG as a shared library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#installing-the-python-wrapper-into-python">10.2. Installing the Python wrapper into Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#extending-python-with-mpi-to-run-in-parallel">10.3. Extending Python with MPI to run in parallel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#testing-the-python-liggghts-r-tug-interface">10.4. Testing the Python-LIGGGHTS(R)-TUG interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Section_python.html#test-liggghts-r-tug-and-python-in-serial">10.4.1. <strong>Test LIGGGHTS(R)-TUG and Python in serial:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_python.html#test-liggghts-r-tug-and-python-in-parallel">10.4.2. <strong>Test LIGGGHTS(R)-TUG and Python in parallel:</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Section_python.html#running-python-scripts">10.4.3. <strong>Running Python scripts:</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#using-liggghts-r-tug-from-python">10.5. Using LIGGGHTS(R)-TUG from Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#example-python-scripts-that-use-liggghts-r-tug">10.6. Example Python scripts that use LIGGGHTS(R)-TUG</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#common-problems">11.1. Common problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#reporting-bugs">11.2. Reporting bugs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#error-warning-messages">11.3. Error &amp; warning messages</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
+        
+      <li>fix ave/euler command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/fix_ave_euler.rst.txt" rel="nofollow"> View page source</a>
+          
+          <a href="http://www.cfdem.com"> Website</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-ave-euler-command">
+<span id="index-0"></span><h1>fix ave/euler command<a class="headerlink" href="#fix-ave-euler-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fix</span> <span class="n">ID</span> <span class="n">group</span><span class="o">-</span><span class="n">ID</span> <span class="n">ave</span><span class="o">/</span><span class="n">euler</span> <span class="n">nevery</span> <span class="n">N</span> <span class="n">cell_size_relative</span> <span class="n">c</span> <span class="n">parallel</span> <span class="n">par</span> <span class="n">keywords</span> <span class="n">values</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><span class="doc">fix</span></a> command</li>
+<li>ave/euler = style name of this fix command</li>
+<li>nevery = obligatory keyword</li>
+<li>n = calculate average values every this many timesteps</li>
+<li>cell_size_relative = obligatory keyword</li>
+<li>c = cell size in multiples of max cutoff</li>
+<li>parallel = obligatory keyword</li>
+<li>par = “yes” or “no</li>
+<li>zero or more keyword/value pairs may be appended</li>
+<li><dl class="first docutils">
+<dt>keyword = <em>basevolume_region</em>, <em>use_voronoi_volume</em></dt>
+<dd><dl class="first last docutils">
+<dt><em>basevolume_region</em> values = reg-ID</dt>
+<dd>region-ID = correct grid cell volume based on this region</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>use_voronoi_volume</em> values = yes or no</dt>
+<dd>use Voronoi cells to correct grid cell volumes</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fix</span> <span class="mi">1</span> <span class="nb">all</span> <span class="n">ave</span><span class="o">/</span><span class="n">euler</span> <span class="n">nevery</span> <span class="mi">100</span> <span class="n">cell_size_relative</span> <span class="mf">4.5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Calculate cell-based averages of velocity, radius, volume fraction,
+and pressure (-1/3 * trace of the stress tensor) every few timesteps,
+as specified by the <em>nevery</em> keyword. The size of the cells is calculated
+as multiple of the maximum cutoff, via the <em>cell_size_relative</em>.
+Note that at least a relative cell size of 3 is required.</p>
+<p>Note that velocity is favre (mass) averaged, whereas radius is arithmetically
+averaged. To calculate the stress, this command internally uses a
+<a class="reference internal" href="compute_stress_atom.html"><span class="doc">compute stress/atom</span></a> . It includes the convective
+term correctly for granular particles with non-zero average velocity
+(which is not included  in <a class="reference internal" href="compute_stress_atom.html"><span class="doc">compute stress/atom</span></a>).
+However, it does not include bond, angle, diahedral or kspace contributions
+so that the stress tensor finally reads</p>
+<img alt="_images/stress_tensor_granular.png" class="align-center" src="_images/stress_tensor_granular.png" />
+<p>where vave is the (cell-based) average velocity.
+The first term is a kinetic energy contribution for atom <em>I</em>.  The
+second term is a pairwise energy contribution where <em>n</em> loops over the
+<em>Np</em> neighbors of atom <em>I</em>, <em>r1</em> and <em>r2</em> are the positions of the 2
+atoms in the pairwise interaction, and <em>F1</em> and <em>F2</em> are the forces on
+the 2 atoms resulting from the pairwise interaction.</p>
+<p>The <em>parallel</em> option determines if every process allocates
+its own local grid for postprocessing (for <em>parallel</em> = yes),
+or each proc contributes to one single global grid (for <em>parallel</em> = no).
+This will be slower since it requires parallel communication,
+but will ensure that the grid cells do not move over time (e.g.
+in case of a moving boundary)</p>
+<p>The <em>basevolume_region</em> option allows to specify a region that
+represents the volume which can theoretically be filled with
+particles. This will then be used to correct the basis of the averaging
+volume for each cell in the grid. For example, if you use a cylindrical
+wall, it makes sense to use an identical cylindrical region for
+the <em>basevolume_region</em> option, and the command will correctly
+calculate the volume fraction in the near-wall cells.
+the calculation of overlap between grid cells and the region
+is done using a Monte-Carlo approach.</p>
+<p>The <em>use_voronoi_cells</em> option can be used to correct the grid cell
+volume. A <span class="xref std std-doc">fix voronoi/atom</span> needs to exist in
+the simulation, and needs to have <em>use_meshes</em> = <em>yes</em> set. Then, for
+each grid cell the sum of all Voronoi volumes is computed. If the sum
+is smaller than the grid cell volume, it will be used instead of the
+cell volume.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>No information about this fix is written to <a class="reference internal" href="restart.html"><span class="doc">binary restart files</span></a>.  None of the <a class="reference internal" href="fix_modify.html"><span class="doc">fix_modify</span></a> options
+are relevant to this fix.</p>
+<p>This fix computes the above-mentioned quantities for output via a
+<span class="xref std std-doc">dump euler/vtk</span> command.  The values can
+only be accessed on timesteps that are multiples of <em>nevery</em> since that
+is when calculations are performed.</p>
+<p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
+the <a class="reference internal" href="run.html"><span class="doc">run</span></a> command.  This fix is not invoked during <span class="xref std std-doc">energy minimization</span>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Volume fractions and stresses are calculated based on the assumption
+of a structured (equidistant regular) grid, so volume fractions and
+stresses near walls that are not alligned with the grid will be
+incorrect.</p>
+<p><strong>Coarse-graining information:</strong></p>
+<p>Using <a class="reference internal" href="coarsegraining.html"><span class="doc">coarsegraining</span></a> in
+combination with this command might lead to
+different dynamics or system state and thus to
+inconsistancies. However, the influence of this
+model on the global dynamics or system state might
+be small so in some cases the results may be valid.
+This has to be reviewed by a specialist on a
+case-by-case basis.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="coarsegraining.html"><span class="doc">Coarsegraining</span></a> may or
+may not be available in LIGGGHTS(R)-TUG.</p>
+</div>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="compute.html"><span class="doc">compute</span></a>, <a class="reference internal" href="compute_stress_atom.html"><span class="doc">compute stress/atom</span></a>,
+<a class="reference internal" href="fix_ave_atom.html"><span class="doc">fix ave/atom</span></a>, <a class="reference internal" href="fix_ave_histo.html"><span class="doc">fix ave/histo</span></a>,
+<a class="reference internal" href="fix_ave_time.html"><span class="doc">fix ave/time</span></a>, <a class="reference internal" href="fix_ave_spatial.html"><span class="doc">fix ave/spatial</span></a>,</p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'v4.X',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
