@@ -1,5 +1,5 @@
 # ignore these entries with git
-/eigen.tar.gz
-/eigen-eigen-*
+#/eigen.tar.gz
+#/eigen-eigen-*
 /includelink
-/eigen3
+#/eigen3

@@ -623,6 +623,18 @@
 #define PACKAGE "SPIN"
 #include "SPIN/pair_spin_neel.h"
 #undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/pair_smd_hertz.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/pair_smd_tlsph.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/pair_smd_triangulated_surface.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/pair_smd_ulsph.h"
+#undef PACKAGE
 #define PACKAGE "USER-AWPMD"
 #include "USER-AWPMD/pair_awpmd_cut.h"
 #undef PACKAGE
@@ -1234,18 +1246,6 @@
 #undef PACKAGE
 #define PACKAGE "USER-SDPD"
 #include "USER-SDPD/pair_sdpd_taitwater_isothermal.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/pair_smd_hertz.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/pair_smd_tlsph.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/pair_smd_triangulated_surface.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/pair_smd_ulsph.h"
 #undef PACKAGE
 #define PACKAGE "USER-SMTBQ"
 #include "USER-SMTBQ/pair_smtbq.h"

@@ -50,6 +50,9 @@
 #define PACKAGE "SPIN"
 #include "SPIN/atom_vec_spin.h"
 #undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/atom_vec_smd.h"
+#undef PACKAGE
 #define PACKAGE "USER-AWPMD"
 #include "USER-AWPMD/atom_vec_wavepacket.h"
 #undef PACKAGE
@@ -67,9 +70,6 @@
 #undef PACKAGE
 #define PACKAGE "USER-MESO"
 #include "USER-MESO/atom_vec_tdpd.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/atom_vec_smd.h"
 #undef PACKAGE
 #define PACKAGE "USER-SPH"
 #include "USER-SPH/atom_vec_meso.h"

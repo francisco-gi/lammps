@@ -314,6 +314,27 @@
 #define PACKAGE "SRD"
 #include "SRD/fix_wall_srd.h"
 #undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_adjust_dt.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_integrate_tlsph.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_integrate_ulsph.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_move_triangulated_surface.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_setvel.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_tlsph_reference_configuration.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/fix_smd_wall_surface.h"
+#undef PACKAGE
 #define PACKAGE "USER-ATC"
 #include "USER-ATC/fix_atc.h"
 #undef PACKAGE
@@ -616,27 +637,6 @@
 #undef PACKAGE
 #define PACKAGE "USER-SDPD"
 #include "USER-SDPD/fix_rigid_meso.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_adjust_dt.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_integrate_tlsph.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_integrate_ulsph.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_move_triangulated_surface.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_setvel.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_tlsph_reference_configuration.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/fix_smd_wall_surface.h"
 #undef PACKAGE
 #define PACKAGE "USER-SPH"
 #include "USER-SPH/fix_meso.h"

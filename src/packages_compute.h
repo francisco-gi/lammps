@@ -59,6 +59,69 @@
 #define PACKAGE "SPIN"
 #include "SPIN/compute_spin.h"
 #undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_contact_radius.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_damage.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_hourglass_error.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_internal_energy.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_plastic_strain.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_plastic_strain_rate.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_rho.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_defgrad.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_dt.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_num_neighs.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_shape.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_strain.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_strain_rate.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_tlsph_stress.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_triangle_vertices.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_ulsph_effm.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_ulsph_num_neighs.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_ulsph_strain.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_ulsph_strain_rate.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_ulsph_stress.h"
+#undef PACKAGE
+#define PACKAGE "TOUPDATELATER_USER-SMD"
+#include "TOUPDATELATER_USER-SMD/compute_smd_vol.h"
+#undef PACKAGE
 #define PACKAGE "USER-BOCS"
 #include "USER-BOCS/compute_pressure_bocs.h"
 #undef PACKAGE
@@ -145,69 +208,6 @@
 #undef PACKAGE
 #define PACKAGE "USER-REAXC"
 #include "USER-REAXC/compute_spec_atom.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_contact_radius.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_damage.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_hourglass_error.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_internal_energy.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_plastic_strain.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_plastic_strain_rate.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_rho.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_defgrad.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_dt.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_num_neighs.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_shape.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_strain.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_strain_rate.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_tlsph_stress.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_triangle_vertices.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_ulsph_effm.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_ulsph_num_neighs.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_ulsph_strain.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_ulsph_strain_rate.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_ulsph_stress.h"
-#undef PACKAGE
-#define PACKAGE "USER-SMD"
-#include "USER-SMD/compute_smd_vol.h"
 #undef PACKAGE
 #define PACKAGE "USER-SPH"
 #include "USER-SPH/compute_meso_e_atom.h"
