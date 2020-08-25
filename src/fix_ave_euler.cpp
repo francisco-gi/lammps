@@ -62,7 +62,7 @@
 #include <typeinfo>
 
 #define BIG 1000000000
-#define INVOKED_PERATOM 13 
+#define INVOKED_PERATOM 8 
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
