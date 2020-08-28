@@ -200,7 +200,7 @@ std::cout << std::endl << "**********************************************\nRELAT
 
 
 
-  std::cout << typeid(cell_size_ideal_rel_).name();
+//  std::cout << typeid(cell_size_ideal_rel_).name();
 std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
 //printf("Cell size ideal relative : %ld\n",cell_size_ideal_rel);
   printf("\n\nFixAveEuler::FixAveEuler - Completed\n\n");
@@ -248,17 +248,17 @@ void FixAveEuler::post_constructor()
         arg[2]="stress/atom";
         arg[3]="pair";
 
-    printf("In post_constructor adding compute\n");
+//    printf("In post_constructor adding compute\n");
 //        modify->add_compute(4,(char**)arg);
 
-    printf("In post_constructor Compute stress\n");
+//    printf("In post_constructor Compute stress\n");
 //        compute_stress_ = static_cast<ComputeStressAtom*>(modify->compute[modify->find_compute(arg[0])]);
   }
 
   // ensure that the compute is calculated in the first time step
     printf("In post_constructor - update timestep\n");
   bigint nfirst = (update->ntimestep/nevery)*nevery + nevery;
-    printf("In post_constructor Compute stress add step\n");
+//    printf("In post_constructor Compute stress add step\n");
 //  compute_stress_->addstep(nfirst);
 }
 
@@ -291,11 +291,14 @@ printf("fix ave euler - init()\n");
   // check if box constant
   box_change_size_ = false;
   if(domain->box_change_size)
+  {
     box_change_size_ = true;
+  }
   box_change_domain_ = false;
   if(domain->box_change_domain)
+  {
     box_change_domain_ = true;
-
+  }
   if (region_)
   {
     int iregion = domain->find_region(idregion_);
@@ -339,12 +342,12 @@ void FixAveEuler::setup_bins()
    int ibin;
 //std::cout << __cplusplus << std::endl ;
 
-std::cout << typeid(cell_size_ideal_rel_).name();
+//std::cout << typeid(cell_size_ideal_rel_).name();
 
-std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
+//std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
 
 
-  printf("Cell size ideal relative : %lf\n",cell_size_ideal_rel_);
+//  printf("Cell size ideal relative : %lf\n",cell_size_ideal_rel_);
   
    // calc ideal cell size as multiple of max cutoff
     cell_size_ideal_ = cell_size_ideal_rel_ * (neighbor->cutneighmax-neighbor->skin);
@@ -357,13 +360,13 @@ std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << st
     {
       // get bounds
       if (triclinic_ == 0) {
-	printf("TRICLINIC == 0 \n");
+//	printf("TRICLINIC == 0 \n");
 //	std::cout << parallel_ << std::endl;
         lo_[dim] = parallel_ ? domain->sublo[dim] : domain->boxlo[dim];
         hi_[dim] = parallel_ ? domain->subhi[dim] : domain->boxhi[dim];
 //	std::cout << parallel_ << std::endl;
       } else {
-	printf("TRICLINIC != 0 \n");
+//	printf("TRICLINIC != 0 \n");
         lo_lamda_[dim] = domain->sublo_lamda[dim];
         hi_lamda_[dim] = domain->subhi_lamda[dim];
         cell_size_ideal_lamda_[dim] = cell_size_ideal_/domain->h[dim];
@@ -381,7 +384,6 @@ std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << st
 
     // round down (makes cell size larger)
     // at least one cell
-std::cout << "NO TRICLINIC - cell_size_ideal_:\t"  << cell_size_ideal_ << std::endl;
     for(int dim = 0; dim < 3; dim++)
     {
       if (triclinic_) {

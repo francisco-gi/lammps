@@ -169,9 +169,9 @@ void PairTlsph::PreCompute() {
         Matrix3d F0;
 		
 		/* $$$$ */
-		double test_double_r, test_double_h,test_double_w;
-		Vector3d test_vec;
-		Matrix3d test_M, test_M2, test_M3, test_M4,  test_M_tmp, test_M2_tmp,test_M3_tmp,test_M4_tmp;
+//		double test_double_r, test_double_h,test_double_w;
+//		Vector3d test_vec;
+//		Matrix3d test_M, test_M2, test_M3, test_M4,  test_M_tmp, test_M2_tmp,test_M3_tmp,test_M4_tmp;
 		
         eye.setIdentity();
 
@@ -188,10 +188,10 @@ void PairTlsph::PreCompute() {
                         hourglass_error[i] = 0.0;
 						
 						/* $$$$ */
-						test_M.setZero();
-						test_M2.setZero();
-						test_M3.setZero();
-						test_M4.setZero();
+//						test_M.setZero();
+//						test_M2.setZero();
+//						test_M3.setZero();
+//						test_M4.setZero();
 						//test_M_tmp.setZero();
 						//test_M2_tmp.setZero();
 						
@@ -252,11 +252,11 @@ void PairTlsph::PreCompute() {
                                 dx = xj - xi;
 								
 								// $$$$$
-                                // if (periodic)
-								// {
-                                        // domain->minimum_image(dx0(0), dx0(1), dx0(2));
-										// domain->minimum_image(dx(0), dx(1), dx(2));
-								// }										
+                                if (periodic)
+				{
+                                        domain->minimum_image(dx0(0), dx0(1), dx0(2));
+					domain->minimum_image(dx(0), dx(1), dx(2));
+				}										
 
                                 r0Sq = dx0.squaredNorm();
                                 h = irad + radius[j];
@@ -272,8 +272,6 @@ void PairTlsph::PreCompute() {
                                 scale = 1.0 - degradation_ij[i][jj];
                                 wf = wf_list[i][jj] * scale;
                                 wfd = wfd_list[i][jj] * scale;
-								/* $$$$ */
-								//printf("\nSCALE: %lf\n",scale);
 								/* $$$$ */
 								/* test_double_r = dx.norm();	
 								test_double_h = 0.006;
@@ -326,7 +324,7 @@ void PairTlsph::PreCompute() {
 								test_M3 += volj * test_M3_tmp;
                                 test_M4 += volj * test_M4_tmp;
 							*/	
-								K[i] += volj * Ktmp;
+				K[i] += volj * Ktmp;
                                 Fdot[i] += volj * Fdottmp;
                                 Fincr[i] += volj * Ftmp;
                                 shepardWeight += volj * wf;
@@ -354,11 +352,9 @@ void PairTlsph::PreCompute() {
 				}*/
 				
                 
-				pseudo_inverse_SVD(K[i]);
-				
-
-                      
-						Fdot[i] *= K[i];
+			pseudo_inverse_SVD(K[i]);
+                
+			Fdot[i] *= K[i];
                         Fincr[i] *= K[i];
                         Fincr[i] += eye;
 
@@ -378,8 +374,8 @@ void PairTlsph::PreCompute() {
 				}*/
 
                         if (JAUMANN) {
-							/* $$$$ */
-							printf("\n*******************\n*******************\nJAUMANN\n*******************\n*******************\n");
+				/* $$$$ */
+				printf("\n*******************\n*******************\nJAUMANN\n*******************\n*******************\n");
                                 R[i].setIdentity(); // for Jaumann stress rate, we do not need a subsequent rotation back into the reference configuration
                         } else {
                                 status = PolDec(Fincr[i], R[i], U, false); // polar decomposition of the deformation gradient, F = R * U
@@ -406,10 +402,10 @@ void PairTlsph::PreCompute() {
                         // stress in the unrotated frame of reference is denoted sigma (stress seen by an observer doing rigid body rotations along with the material)
                         // stress in the true frame of reference (a stationary observer) is denoted by T, "true stress"
                         /*$$$$*/
-						//cout << "D" << endl << D[i] << endl;
-						D[i] = (R[i].transpose() * D[i] * R[i]).eval();
-						//cout << "RDR.eval" << endl << D[i] << endl;
-						//printf("\n******************************************************************************************************************\n");
+			//cout << "D" << endl << D[i] << endl;
+			D[i] = (R[i].transpose() * D[i] * R[i]).eval();
+			//cout << "RDR.eval" << endl << D[i] << endl;
+			//printf("\n******************************************************************************************************************\n");
                         // limit strain rate
                         //double limit = 1.0e-3 * Lookup[SIGNAL_VELOCITY][itype] / radius[i];
                         //D[i] = LimitEigenvalues(D[i], limit);
@@ -418,26 +414,9 @@ void PairTlsph::PreCompute() {
                          * make sure F stays within some limits
                          */
 
-
-						/* $$$$ I am printing the matrix for the last local particle at every timestep !!!!!  */
-						/* $$$$ */
-						/*if(i==nlocal-1){
-                                printf("particle [" TAGINT_FORMAT "] -- det(F)=%f \n", tag[i],
-                                                Fincr[i].determinant());
-                           //     printf("nn = %d, damage=%f\n", numNeighsRefConfig[i], damage[i]);
-                                cout << "Here is matrix F:" << endl << Fincr[i] << endl;
-                           //     cout << "Here is matrix F^-1:" << endl << FincrInv[i] << endl;
-                           //     cout << "Here is matrix K^-1:" << endl << K[i] << endl;
-                           //     cout << "Here is matrix K:" << endl << K[i].inverse() << endl;
-                            //    cout << "Here is det of K" << endl << (K[i].inverse()).determinant() << endl;
-                           //     cout << "Here is matrix R:" << endl << R[i] << endl;
-                               cout << "Here is det of R" << endl << R[i].determinant() << endl;
-                                cout << "Here is matrix U:" << endl << U << endl;
-                                //error->one(FLERR, "");
-                        }*/
 						
-						
-						if ((detF[i] < DETF_MIN) || (detF[i] > DETF_MAX) || (numNeighsRefConfig[i] == 0)) {
+			if ((detF[i] < DETF_MIN) || (detF[i] > DETF_MAX) || (numNeighsRefConfig[i] == 0))
+			{
                                 printf("deleting particle [" TAGINT_FORMAT "] because det(F)=%f is outside stable range %f -- %f \n", tag[i],
                                                 Fincr[i].determinant(),
                                                 DETF_MIN, DETF_MAX);
@@ -536,7 +515,7 @@ void PairTlsph::compute(int eflag, int vflag) {
         /*
          * calculate stresses from constitutive models
          */
-		PairTlsph::AssembleStress();
+	PairTlsph::AssembleStress();
 
 
 //printf("\n*******************\nCALLING : COMPUTE  C - forward comm\n*******************\n");
@@ -615,6 +594,8 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
                 // initialize aveage mass density
                 h = 2.0 * radius[i];
                 r = 0.0;
+		/* The values here calculated are used only in the shepardWeight
+			it is the contribution of the particle "i" hence r=0. Later on also neighbours contribution. */
                 spiky_kernel_and_derivative(h, r, domain->dimension, wf, wfd);  /* r = 0 ??? */
                 shepardWeight = wf * voli;
 
@@ -661,11 +642,11 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
                         dx = xj - xi;
                         dv = vj - vi;
 						// $$$$$
-                        // if (periodic)
-						// {
-                                // domain->minimum_image(dx0(0), dx0(1), dx0(2));
-								// domain->minimum_image(dx(0) , dx(1) , dx(2) );
-						// }
+                        if (periodic)
+			{
+                        	domain->minimum_image(dx0(0), dx0(1), dx0(2));
+				domain->minimum_image(dx(0) , dx(1) , dx(2) );
+			}
 
                         // check that distance between i and j (in the reference config) is less than cutoff
                         r0Sq = dx0.squaredNorm();
@@ -756,18 +737,6 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
 
                         // sum stress, viscous, and hourglass forces
                         sumForces = f_stress + f_visc + f_hg; // + f_spring;
-						
-						/*$$$$*/
-						
-						//if(f_stress.norm()>0.00001)
-						//	if(i == nlocal-1 && j==jnum-1 && f_stress.norm()< 0.000001)// || i == nlocal-2)
-						//	printf("%d-%d\ndz_i =\t%.12lf\t dz_ij =\t%.12lf\t dl =\t%.12lf \nf_stress =%lf e-15\n\n",i,j, xi(2)-x0i(2), xi(2)-xj(2),xi(2)-xj(2) -x0i(2)+ x0j(2),  1000000000000000.*f_stress(2));
-						//if(f_visc.norm()>0.00001)
-							// if(i == nlocal-1 && j==jnum-1)// || i == nlocal-2)	
-							// printf("f_visc =\t%lf\t\t%lf\t\t%lf\n", 1000000000.*f_visc(0), 1000000000.*f_visc(1) , 1000000000.*f_visc(2));
-						//if(f_hg.norm()>0.00001)
-							// if(i == nlocal-1&& j==jnum-1)// || i == nlocal-2)	
-							// printf("f_hg \t=\t%lf\t\t%lf\t\t%lf\n",1000000000.*f_hg(0) , 1000000000.*f_hg(1) , 1000000000.*f_hg(2));
 							
                         // energy rate -- project velocity onto force vector
                         deltaE = 0.5 * sumForces.dot(dv);

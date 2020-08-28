@@ -319,7 +319,7 @@ void FixSMD_TLSPH_ReferenceConfiguration::setup(int /*vflag*/) {
                         }
 
                         if (r < h) {
-								// printf("\n**************************************\nSETUP\nspiky_kernel_and_derivative()\n**************************************\n");
+				// printf("\n**************************************\nSETUP\nspiky_kernel_and_derivative()\n**************************************\n");
                                 spiky_kernel_and_derivative(h, r, domain->dimension, wf, wfd);
 
                                 partner[i][npartner[i]] = tag[j];
