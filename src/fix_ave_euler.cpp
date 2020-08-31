@@ -59,6 +59,7 @@
 #include "error.h"
 #include "comm.h"
 
+
 #include <typeinfo>
 
 #define BIG 1000000000
@@ -371,7 +372,7 @@ void FixAveEuler::setup_bins()
         hi_lamda_[dim] = domain->subhi_lamda[dim];
         cell_size_ideal_lamda_[dim] = cell_size_ideal_/domain->h[dim];
       }
-    std::cout << std::endl << "domain->box and sub\thi\tlo\t" <<  domain->boxhi[dim] << "\t" <<   domain->boxlo[dim] << "\t" << domain->subhi[dim] << "\t" << domain->sublo[dim] << std::endl;
+//    std::cout << std::endl << "domain->box and sub\thi\tlo\t" <<  domain->boxhi[dim] << "\t" <<   domain->boxlo[dim] << "\t" << domain->subhi[dim] << "\t" << domain->sublo[dim] << std::endl;
 //    std::cout << std::endl << "diff\thi\tlo\t" <<  hi_[dim]-lo_[dim] << "\t" << hi_[dim] << "\t" << lo_[dim] << std::endl;
 //    printf("L_%d = %lf\t%lf - %lf\n",dim,hi_[dim]-lo_[dim],hi_[dim],lo_[dim]);
     }
@@ -381,7 +382,7 @@ void FixAveEuler::setup_bins()
       domain->lamda2x(lo_lamda_,lo_);
       domain->lamda2x(hi_lamda_,hi_);
     }
-
+    // Calculation of the extension of the cells for the three dimensions
     // round down (makes cell size larger)
     // at least one cell
     for(int dim = 0; dim < 3; dim++)
@@ -395,7 +396,7 @@ void FixAveEuler::setup_bins()
           cell_size_lamda_[dim] = (hi_lamda_[dim]-lo_lamda_[dim])/static_cast<double>(ncells_dim_[dim]);
           cell_size_[dim] = cell_size_lamda_[dim]*domain->h[dim];
       } else {
-          ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_);
+          ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_); // n cells in dimension dim 
 
 std::cout << "ncells_dim_:\t"  << ncells_dim_[dim] << std::endl;
 
@@ -409,13 +410,14 @@ std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
       }
     }
 
+
     for(int dim = 0; dim < 3; dim++)
     {
         cell_size_inv_[dim] = 1./cell_size_[dim];
         if (triclinic_) cell_size_lamda_inv_[dim] = 1./cell_size_lamda_[dim];
 
     }
-
+// total number of cells and volume 
     ncells_ = ncells_dim_[0]*ncells_dim_[1]*ncells_dim_[2];
     
     cell_volume_ = cell_size_[0]*cell_size_[1]*cell_size_[2];
@@ -435,7 +437,7 @@ std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
         memory->grow(stress_,ncells_max_,7,"ave/euler:stress_");
     }
 printf("\nSpatial Arrays bin reallocated\n");
-    // calculate center corrdinates for cells
+    // calculate center coordinates for cells
     for(int ix = 0; ix < ncells_dim_[0]; ix++)
     {
         for(int iy = 0; iy < ncells_dim_[1]; iy++)
@@ -458,20 +460,21 @@ printf("\nSpatial Arrays bin reallocated\n");
             }
         }
     }
-printf("\nCenter corrdinates for cells computed\n");
+printf("\nCells center coordinates  computed\n");
     // calculate weight_[icell]
     if(!region_)
     {
+//printf("REGION NOT DEFINED, ALL WEIGHTS = 1\n");
         for(int icell = 0; icell < ncells_max_; icell++)
             weight_[icell] = 1.;
     }
-printf("\nCell weight calculated\n");
-    // MC calculation if region_ exists
+    // MC calculation if region_ shape is known by lammps, then it has the attribute match()
     if(region_)
     {
+//printf("REGION DEFINED\n");
         double x_try[3];
         int ibin;
-        int ntry = ncells_ * ntry_per_cell(); // number of MC tries
+        int ntry = ncells_ * ntry_per_cell(); // number of MC tries - in .h file defined :  ntry_per_cell()=50
         double contribution = 1./static_cast<double>(ntry_per_cell());  // contrib of each try
 
         for(int icell = 0; icell < ncells_max_; icell++)
@@ -490,6 +493,7 @@ printf("\nCell weight calculated\n");
                     weight_[ibin] += contribution;
             }
         }
+printf("\nCell weight calculated\n");
 
         // allreduce weights
         MPI_Sum_Vector(weight_,ncells_,world);
@@ -711,6 +715,9 @@ printf("FixAveEuler::calculate_eu  -  Loop on all binned particles\n");
 
         for(int iatom = cellhead_[icell/*+stencil*/]; iatom >= 0; iatom = cellptr_[iatom])
         {
+//std::cout << "iatom\t"  <<iatom << std::endl;
+//std::cout << "cellptr_[iatom]\t" << cellptr_[iatom] << std::endl;
+
             vectorScalarMult3D(v[iatom],rmass[iatom],vel_x_mass);
             vectorAdd3D(v_av_[icell],vel_x_mass,v_av_[icell]);
             double r = radius[iatom];
@@ -718,6 +725,7 @@ printf("FixAveEuler::calculate_eu  -  Loop on all binned particles\n");
             if(superquadric_flag)
                 r = cbrt(0.75 * volume[iatom] / M_PI);
             #endif
+
             vol_fr_[icell] += r*r*r;
             radius_[icell] += r;
             mass_[icell] += rmass[iatom];
