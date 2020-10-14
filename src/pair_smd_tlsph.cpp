@@ -550,6 +550,13 @@ void PairTlsph::ComputeForces(int eflag, int vflag) {
         double *radius = atom->radius;
         double *damage = atom->damage;
         double *plastic_strain = atom->eff_plastic_strain;
+
+	// $$$$
+//        double **f_h = atom->smd_force_h;
+//	printf("\n\n\n\n\n\n\n\n\n**********************************************************\n");	
+//printf("local atoms are %d\tf_h[2] = %lf\n",atom->nlocal,f_h[atom->nlocal][2]);
+//	printf("\n**********************************************************\n\n\n\n\n\n\n\n\n");	
+
         int *type = atom->type;
         int nlocal = atom->nlocal;
         int i, j, jj, jnum, itype, idim;

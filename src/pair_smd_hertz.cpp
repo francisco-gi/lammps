@@ -60,6 +60,25 @@ PairHertz::PairHertz(LAMMPS *lmp) :
 
 PairHertz::~PairHertz() {
 
+//printf("\n\n\nPairHertz::~PairHertz()\n\t smd_force_h->[0][2] = %lf\n",(atom->smd_force_h)[0][2]);
+//int i,ii,inum,*ilist; //,*numneigh;
+//        inum = list->inum;
+//        ilist = list->ilist;
+//        numneigh = list->numneigh;
+//        firstneigh = list->firstneigh;
+
+
+        // loop over neighbors of my atoms
+//        for (ii = 0; ii < inum; ii++) {
+//                i = ilist[ii];
+//printf("i is %d\n",i);
+//i = 0;
+//while( i < 251*5)
+//{
+//		printf("%lf\t%lf\t%lf\n",(atom->smd_force_h)[i][0],(atom->smd_force_h)[i][1],(atom->smd_force_h)[i][2]);
+//		i++;
+//	}
+//printf("i is %d\n",i);
         if (allocated) {
                 memory->destroy(setflag);
                 memory->destroy(cutsq);
@@ -95,6 +114,12 @@ void PairHertz::compute(int eflag, int vflag) {
         double *sph_radius = atom->radius;
         double rcutSq;
         double delx0, dely0, delz0, rSq0, sphCut;
+
+	// $$$$
+        double **f_h = atom->smd_force_h;
+	printf("\n\n\n\n\n\n\n\n\n**********************************************************\n");	
+	printf("PAIR_SMD_HERTZ\n\nlocal atoms are %d\tf_h[2] = %lf\n",atom->nlocal,f_h[atom->nlocal][2]);
+	printf("\n**********************************************************\n\n\n\n\n\n\n\n\n");	
 
         int newton_pair = force->newton_pair;
         int periodic = (domain->xperiodic || domain->yperiodic || domain->zperiodic);
@@ -215,8 +240,17 @@ void PairHertz::compute(int eflag, int vflag) {
                                         f[j][2] -= delz * fpair;
                                 }
 
-                        }
-                }
+                        } // end 'if' particles interacting
+                } // end of loop 'for' jj<jnum neighbours of i
+//printf("\n j list finished with number %d\t",j);
+//printf("i number %d\n",i);
+//printf("\n jj is %d out of jnum %d\t",jj,jnum);
+//printf(" ii is  %d out of inum %d\n",ii,inum);
+               f_h[i][0] = f[i][0];
+               f_h[i][1] = f[i][1];
+               f_h[i][2] = f[i][2];
+if (i==inum-1)
+	printf( "FORCES\t%lf\t%lf\t%lf\n" ,f_h[0][0], f_h[0][1] , f_h[0][2] );
         }
 
 //      double stable_time_increment_all = 0.0;

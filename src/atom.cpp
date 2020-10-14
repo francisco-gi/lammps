@@ -116,6 +116,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   eff_plastic_strain = NULL;
   eff_plastic_strain_rate = NULL;
   damage = NULL;
+  // $$$$
+  smd_force_h = NULL;
 
   // molecular info
 
@@ -143,6 +145,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   nspecial = NULL;
   special = NULL;
 
+//	end pf customization section
+//--------------------------------------------------------------
   // user-defined molecules
 
   nmolecule = 0;
@@ -155,7 +159,9 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   dvector = NULL;
   iname = dname = NULL;
 
+  // in newer version of LAMMPS this is the peratom_create()
   // initialize atom style and array existence flags
+  // necessary if the code (e.g. a pair style) needs to check that a per-atom property is defined
   // customize by adding new flag
 
   sphere_flag = peri_flag = electron_flag = 0;
@@ -188,6 +194,10 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   eff_plastic_strain_flag = 0;
   eff_plastic_strain_rate_flag = 0;
   damage_flag = 0;
+
+  // $$$$
+  smd_force_h_flag = 0;
+
 
   // Peridynamic scale factor
 
@@ -303,6 +313,8 @@ Atom::~Atom()
   memory->destroy(eff_plastic_strain);
   memory->destroy(eff_plastic_strain_rate);
   memory->destroy(damage);
+  // $$$$
+  memory->destroy(smd_force_h);
 
   memory->destroy(dpdTheta);
   memory->destroy(uCond);
@@ -2281,6 +2293,8 @@ void *Atom::extract(char *name)
   if (strcmp(name, "eff_plastic_strain_rate") == 0)
     return (void *) eff_plastic_strain_rate;
   if (strcmp(name, "damage") == 0) return (void *) damage;
+  // $$$$
+  if (strcmp(name,"smd_force_h") == 0) return (void *) smd_force_h;
 
   if (strcmp(name,"dpdTheta") == 0) return (void *) dpdTheta;
   if (strcmp(name,"edpd_temp") == 0) return (void *) edpd_temp;

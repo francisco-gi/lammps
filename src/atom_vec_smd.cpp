@@ -68,9 +68,17 @@ AtomVecSMD::AtomVecSMD(LAMMPS *lmp) :
         atom->damage_flag = 1;
         atom->eff_plastic_strain_rate_flag = 1;
 
+	// $$$$
+        atom->smd_force_h_flag = 1;
+
         forceclearflag = 1;
 
         atom->smd_flag = 1;
+
+	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
+	printf("FLAG print: %d\t %d\n",atom->smd_force_h_flag,atom->smd_stress_flag);
+
+	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -118,6 +126,9 @@ void AtomVecSMD::grow(int n) {
         e = memory->grow(atom->e, nmax, "atom:e");
         vest = memory->grow(atom->vest, nmax, 3, "atom:vest");
         tlsph_stress = memory->grow(atom->smd_stress, nmax, NMAT_SYMM, "atom:tlsph_stress");
+	// $$$$
+	// Should I allign to force or to velocities? there are different arguments ion memory_grow functions
+        force_h = memory->grow(atom->smd_force_h, nmax, 3, "atom:force_h");
         eff_plastic_strain = memory->grow(atom->eff_plastic_strain, nmax, "atom:eff_plastic_strain");
         eff_plastic_strain_rate = memory->grow(atom->eff_plastic_strain_rate, nmax, "atom:eff_plastic_strain_rate");
         damage = memory->grow(atom->damage, nmax, "atom:damage");
@@ -125,6 +136,10 @@ void AtomVecSMD::grow(int n) {
         if (atom->nextra_grow)
                 for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
                         modify->fix[atom->extra_grow[iextra]]->grow_arrays(nmax);
+
+	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
+	printf("force print f: %lf\t %lf\n",force_h[0],force_h[2]);
+	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -149,11 +164,17 @@ void AtomVecSMD::grow_reset() {
         smd_data_9 = atom->smd_data_9;
         e = atom->e;
         de = atom->de;
+	// $$$$
+        force_h = atom->smd_force_h;
         tlsph_stress = atom->smd_stress;
         eff_plastic_strain = atom->eff_plastic_strain;
         eff_plastic_strain_rate = atom->eff_plastic_strain_rate;
         damage = atom->damage;
         vest = atom->vest;
+	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
+	printf("force print f: %lf\t %lf\n",force_h[0],force_h[2]);
+	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
+
 }
 
 /* ----------------------------------------------------------------------
@@ -186,6 +207,9 @@ void AtomVecSMD::copy(int i, int j, int delflag) {
         vest[j][0] = vest[i][0];
         vest[j][1] = vest[i][1];
         vest[j][2] = vest[i][2];
+	
+	// $$$$
+	
 
         for (int k = 0; k < NMAT_FULL; k++) {
                 smd_data_9[j][k] = smd_data_9[i][k];
@@ -478,7 +502,7 @@ int AtomVecSMD::pack_border_vel(int n, int *list, double *buf, int pbc_flag, int
                         for (int k = 0; k < NMAT_SYMM; k++) {
                                 buf[m++] = tlsph_stress[j][k];
                         } // 31
-
+//printf("\n\n\n\n\n\n\n\n\nTLSPH STRESS\t %lf\n\n\n\n\n\n\n\n\n\n",tlsph_stress[j][1]);
                         buf[m++] = v[j][0];
                         buf[m++] = v[j][1];
                         buf[m++] = v[j][2]; // 34
@@ -758,6 +782,10 @@ int AtomVecSMD::pack_exchange(int i, double *buf) {
 
         buf[m++] = damage[i];
 
+	// $$$$
+        buf[m++] = force_h[i][0];
+        buf[m++] = force_h[i][1];
+        buf[m++] = force_h[i][2]; // 43
         if (atom->nextra_grow)
                 for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
                         m += modify->fix[atom->extra_grow[iextra]]->pack_exchange(i, &buf[m]);
@@ -811,6 +839,11 @@ int AtomVecSMD::unpack_exchange(double *buf) {
         vest[nlocal][2] = buf[m++]; // 39
 
         damage[nlocal] = buf[m++]; //40
+
+	// $$$$
+        force_h[nlocal][0] = buf[m++];
+        force_h[nlocal][1] = buf[m++];
+        force_h[nlocal][2] = buf[m++]; // 43
 
         if (atom->nextra_grow)
                 for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
@@ -1273,6 +1306,10 @@ bigint AtomVecSMD::memory_usage() {
 
         if (atom->memcheck("damage"))
                 bytes += memory->usage(damage, nmax);
+
+	// $$$$
+        if (atom->memcheck("force_h"))
+                bytes += memory->usage(force_h, nmax * comm->nthreads, 3);
 
         return bytes;
 }

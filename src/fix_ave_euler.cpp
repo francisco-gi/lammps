@@ -158,8 +158,10 @@ std::cout << std::endl << "**********************************************\nRELAT
 //std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
  
   if(cell_size_ideal_rel_ < 1.)
-    error->fix_error(FLERR,this,"'cell_size_relative' > 1 required");
- 
+  {
+//    error->fix_error(FLERR,this,"'cell_size_relative' > 1 required");
+      printf("'cell_size_relative' = %lf\n",cell_size_ideal_rel_);
+  }
 
   if(strcmp(arg[iarg++],"parallel"))
   {
