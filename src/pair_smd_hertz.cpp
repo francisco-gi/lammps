@@ -117,9 +117,6 @@ void PairHertz::compute(int eflag, int vflag) {
 
 	// $$$$
         double **f_h = atom->smd_force_h;
-	printf("\n\n\n\n\n\n\n\n\n**********************************************************\n");	
-	printf("PAIR_SMD_HERTZ\n\nlocal atoms are %d\tf_h[2] = %lf\n",atom->nlocal,f_h[atom->nlocal][2]);
-	printf("\n**********************************************************\n\n\n\n\n\n\n\n\n");	
 
         int newton_pair = force->newton_pair;
         int periodic = (domain->xperiodic || domain->yperiodic || domain->zperiodic);
@@ -229,15 +226,30 @@ void PairHertz::compute(int eflag, int vflag) {
                                 if (evflag) {
                                         ev_tally(i, j, nlocal, newton_pair, evdwl, 0.0, fpair, delx, dely, delz);
                                 }
+		
+				// $$$$
+//				df [0] =  delx * fpair;
+//				df [1] =  dely * fpair;
+//				df [2] =  delz * fpair;
+
+                                f_h[i][0] += delx * fpair;
+                                f_h[i][1] += dely * fpair;
+                                f_h[i][2] += delz * fpair;
 
                                 f[i][0] += delx * fpair;
                                 f[i][1] += dely * fpair;
                                 f[i][2] += delz * fpair;
 
                                 if (newton_pair || j < nlocal) {
+//				printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\tNEWTON_PAIR\n");	
                                         f[j][0] -= delx * fpair;
                                         f[j][1] -= dely * fpair;
                                         f[j][2] -= delz * fpair;
+
+					// $$$$
+                             	   	f_h[j][0] -= delx * fpair;
+                           	   	f_h[j][1] -= dely * fpair;
+                           	   	f_h[j][2] -= delz * fpair;
                                 }
 
                         } // end 'if' particles interacting
@@ -246,11 +258,9 @@ void PairHertz::compute(int eflag, int vflag) {
 //printf("i number %d\n",i);
 //printf("\n jj is %d out of jnum %d\t",jj,jnum);
 //printf(" ii is  %d out of inum %d\n",ii,inum);
-               f_h[i][0] = f[i][0];
-               f_h[i][1] = f[i][1];
-               f_h[i][2] = f[i][2];
-if (i==inum-1)
-	printf( "FORCES\t%lf\t%lf\t%lf\n" ,f_h[0][0], f_h[0][1] , f_h[0][2] );
+//if (i==inum-1)
+//	printf( "FORCES\t%lf\t%lf\t%lf\n" ,f_h[0][0], f_h[0][1] , f_h[0][2] );
+
         }
 
 //      double stable_time_increment_all = 0.0;

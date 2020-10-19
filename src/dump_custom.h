@@ -190,6 +190,11 @@ class DumpCustom : public Dump {
   void pack_tqx(int);
   void pack_tqy(int);
   void pack_tqz(int);
+
+  // $$$$
+  void pack_fhx(int);
+  void pack_fhy(int);
+  void pack_fhz(int);
 };
 
 }
@@ -199,7 +204,7 @@ class DumpCustom : public Dump {
 
 /* ERROR/WARNING messages:
 
-E: No dump custom arguments specified
+E: N o dump custom arguments specified
 
 The dump custom command requires that atom quantities be specified to
 output to dump file.

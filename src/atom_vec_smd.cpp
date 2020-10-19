@@ -75,10 +75,9 @@ AtomVecSMD::AtomVecSMD(LAMMPS *lmp) :
 
         atom->smd_flag = 1;
 
-	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
-	printf("FLAG print: %d\t %d\n",atom->smd_force_h_flag,atom->smd_stress_flag);
-
-	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
+//	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
+//	printf("FLAG print: %d\t %d\n",atom->smd_force_h_flag,atom->smd_stress_flag);
+//	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -136,10 +135,6 @@ void AtomVecSMD::grow(int n) {
         if (atom->nextra_grow)
                 for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
                         modify->fix[atom->extra_grow[iextra]]->grow_arrays(nmax);
-
-	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
-	printf("force print f: %lf\t %lf\n",force_h[0],force_h[2]);
-	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -171,10 +166,6 @@ void AtomVecSMD::grow_reset() {
         eff_plastic_strain_rate = atom->eff_plastic_strain_rate;
         damage = atom->damage;
         vest = atom->vest;
-	printf("\n\n\n\n\n\n\n\n*****************************************************************************\n");
-	printf("force print f: %lf\t %lf\n",force_h[0],force_h[2]);
-	printf("\n*****************************************************************************\n\n\n\n\n\n\n\n");
-
 }
 
 /* ----------------------------------------------------------------------
@@ -405,7 +396,7 @@ int AtomVecSMD::unpack_comm_hybrid(int n, int first, double *buf) {
 int AtomVecSMD::pack_reverse(int n, int first, double *buf) {
         int i, m, last;
 
-        printf("in pack_reverse\n");
+//        printf("in pack_reverse\n");
 
         m = 0;
         last = first + n;
@@ -1320,4 +1311,5 @@ void AtomVecSMD::force_clear(int n, size_t nbytes) {
         //printf("clearing force on atom %d", n);
         memset(&de[n], 0, nbytes);
         memset(&f[0][0], 0, 3 * nbytes);
+        memset(&force_h[0][0], 0, 3 * nbytes);
 }

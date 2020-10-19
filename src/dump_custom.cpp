@@ -42,7 +42,8 @@ enum{ID,MOL,PROC,PROCP1,TYPE,ELEMENT,MASS,
      Q,MUX,MUY,MUZ,MU,RADIUS,DIAMETER,
      OMEGAX,OMEGAY,OMEGAZ,ANGMOMX,ANGMOMY,ANGMOMZ,
      TQX,TQY,TQZ,
-     COMPUTE,FIX,VARIABLE,INAME,DNAME};
+     COMPUTE,FIX,VARIABLE,INAME,DNAME,
+     FHX,FHY,FHZ};
 enum{LT,LE,GT,GE,EQ,NEQ,XOR};
 
 #define INVOKED_PERATOM 8
@@ -822,6 +823,28 @@ int DumpCustom::count()
         ptr = &atom->f[0][2];
         nstride = 3;
 
+	// $$$$
+
+      } else if (thresh_array[ithresh] == FHX) {
+        if (!atom->smd_force_h)
+          error->all(FLERR,
+                     "Threshold for an atom property that isn't allocated");
+        ptr = &atom->smd_force_h[0][0];
+        nstride = 3;
+      } else if (thresh_array[ithresh] == FHY) {
+        if (!atom->smd_force_h)
+          error->all(FLERR,
+                     "Threshold for an atom property that isn't allocated");
+        ptr = &atom->smd_force_h[0][1];
+        nstride = 3;
+      } else if (thresh_array[ithresh] == FHZ) {
+        if (!atom->smd_force_h)
+          error->all(FLERR,
+                     "Threshold for an atom property that isn't allocated");
+        ptr = &atom->smd_force_h[0][2];
+        nstride = 3;
+
+
       } else if (thresh_array[ithresh] == Q) {
         if (!atom->q_flag)
           error->all(FLERR,
@@ -1269,6 +1292,17 @@ int DumpCustom::parse_fields(int narg, char **arg)
       pack_choice[i] = &DumpCustom::pack_fz;
       vtype[i] = Dump::DOUBLE;
 
+	// $$$$
+    } else if (strcmp(arg[iarg],"fhx") == 0) {
+      pack_choice[i] = &DumpCustom::pack_fhx;
+      vtype[i] = Dump::DOUBLE;
+    } else if (strcmp(arg[iarg],"fhy") == 0) {
+      pack_choice[i] = &DumpCustom::pack_fhy;
+      vtype[i] = Dump::DOUBLE;
+    } else if (strcmp(arg[iarg],"fhz") == 0) {
+      pack_choice[i] = &DumpCustom::pack_fhz;
+      vtype[i] = Dump::DOUBLE;
+
     } else if (strcmp(arg[iarg],"q") == 0) {
       if (!atom->q_flag)
         error->all(FLERR,"Dumping an atom property that isn't allocated");
@@ -1488,6 +1522,7 @@ int DumpCustom::parse_fields(int narg, char **arg)
     } else return iarg;
   }
 
+  // number of quantities to print
   return narg;
 }
 
@@ -1791,6 +1826,11 @@ int DumpCustom::modify_param(int narg, char **arg)
     else if (strcmp(arg[1],"fx") == 0) thresh_array[nthresh] = FX;
     else if (strcmp(arg[1],"fy") == 0) thresh_array[nthresh] = FY;
     else if (strcmp(arg[1],"fz") == 0) thresh_array[nthresh] = FZ;
+
+    // $$$$
+    else if (strcmp(arg[1],"fhx") == 0) thresh_array[nthresh] = FHX;
+    else if (strcmp(arg[1],"fhy") == 0) thresh_array[nthresh] = FHY;
+    else if (strcmp(arg[1],"fhz") == 0) thresh_array[nthresh] = FHZ;
 
     else if (strcmp(arg[1],"q") == 0) thresh_array[nthresh] = Q;
     else if (strcmp(arg[1],"mux") == 0) thresh_array[nthresh] = MUX;
@@ -2647,6 +2687,44 @@ void DumpCustom::pack_fz(int n)
 
   for (int i = 0; i < nchoose; i++) {
     buf[n] = f[clist[i]][2];
+    n += size_one;
+  }
+}
+
+
+/* ---------------------------------------------------------------------- */
+	// $$$$
+
+void DumpCustom::pack_fhx(int n)
+{
+  double **fh = atom->smd_force_h;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = fh[clist[i]][0];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustom::pack_fhy(int n)
+{
+  double **fh = atom->smd_force_h;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = fh[clist[i]][1];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustom::pack_fhz(int n)
+{
+  double **fh = atom->smd_force_h;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = fh[clist[i]][2];
     n += size_one;
   }
 }
