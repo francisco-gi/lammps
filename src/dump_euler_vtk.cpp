@@ -3,7 +3,6 @@
 
     ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
     ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
-    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
     ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
     ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
     ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
@@ -103,6 +102,9 @@ void DumpEulerVTK::init_style()
   // node center (3), av vel (3), volume fraction, stress, radius
   size_one = 9; //TODO: this should be auto-calculated!
 
+domain->boundary_string(boundstr);
+
+
   delete [] format;
 }
 
@@ -126,7 +128,14 @@ void DumpEulerVTK::write_header_ascii(bigint ndump)
 {
 printf("DumpEulerVTK::write_hader_ascii\n");
   if (comm->me!=0) return;
-  fprintf(fp,"# vtk DataFile Version 2.0\nLIGGGHTS mesh/VTK export\nASCII\n");
+
+ fprintf(fp,"# vtk DataFile Version 2.0\nLIGGGHTS mesh/VTK export\nASCII\n");
+ fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
+ fprintf(fp,"%-1.16e %-1.16e\n",boxxlo,boxxhi);
+ fprintf(fp,"%-1.16e %-1.16e\n",boxylo,boxyhi);
+
+fprintf(fp,"%-1.16e %-1.16e\n",boxzlo,boxzhi);
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -146,12 +155,22 @@ printf("DumpEulerVTK::count\n");
 
 void DumpEulerVTK::pack(int *ids)
 {
-printf("DumpEulerVTK::pack\n");  int m = 0;
+printf("DumpEulerVTK::pack\n");
+  int m = 0;
 
   // have to stick with this order (all per-element props)
   // as multiple procs pack
 
   int ncells = fix_euler_->ncells_pack();
+
+// $$$$
+//    buf[m++] = fix_euler_->box_lo(0);
+//    buf[m++] = fix_euler_->box_lo(1);
+//    buf[m++] = fix_euler_->box_lo(2);
+
+//    buf[m++] = fix_euler_->box_hi(0);
+//    buf[m++] = fix_euler_->box_hi(1);
+//    buf[m++] = fix_euler_->box_hi(2);
 
   for(int i = 0; i < ncells; i++)
   {
@@ -167,6 +186,8 @@ printf("DumpEulerVTK::pack\n");  int m = 0;
     buf[m++] = fix_euler_->cell_radius(i);
     buf[m++] = fix_euler_->cell_pressure(i);
   }
+printf("*******************************************************\nbuf length is %d\n",m);
+printf("*******************************************************\n",m);
   return ;
 }
 
@@ -179,15 +200,21 @@ printf("DumpEulerVTK::write_data\n");    //only proc 0 writes
 
     n_calls_++;
 
+    // $$$$ the "+6" in next lines are added by mean for including the boundaries to the information will be dumped
     // grow buffer if necessary
+printf("n_all_ is : %d\n",n_all_);
+printf("n_all_max_ is : %d\n",n_all_max_);
+printf("n : %d\tsize_one : %d\tn*size_one : %d\n",n,size_one,n*size_one);
     if(n_all_+n*size_one > n_all_max_)
     {
         n_all_max_ = n_all_ + n*size_one;
+printf("Memory grow 1\n");	
         memory->grow(buf_all_,n_all_max_,"DumpEulerVTK:buf_all_");
+printf("Memory grow 2\n");	
     }
 
     // copy to buffer
-    vectorCopyN(mybuf,&(buf_all_[n_all_]),n*size_one);
+    vectorCopyN(mybuf,&(buf_all_[n_all_]),n*size_one); // $$$$
     n_all_ += n*size_one;
 
     // write on last call
@@ -202,10 +229,19 @@ printf("DumpEulerVTK::write_data_ascii\n");
 
   // n is the number of elements
 
-  // write point data
-  fprintf(fp,"DATASET POLYDATA\nPOINTS %d float\n",n);
   m = 0;
   buf_pos = 0;
+
+  // $$$$
+//  fprintf(fp,"BOX BOUNDARIES\n");
+//  fprintf(fp,"%f\t%f\n",mybuf[m++],mybuf[m++]);
+//  fprintf(fp,"%f\t%f\n",mybuf[m++],mybuf[m++]);
+//  fprintf(fp,"%f\t%f\n",mybuf[m++],mybuf[m++]);
+//  buf_pos += 6;
+
+  // write point data
+  fprintf(fp,"DATASET POLYDATA\nPOINTS %d float\n",n);
+
   for (int i = 0; i < n; i++)
   {
       fprintf(fp,"%f %f %f\n",mybuf[m],mybuf[m+1],mybuf[m+2]);

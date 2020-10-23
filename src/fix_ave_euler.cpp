@@ -398,6 +398,7 @@ void FixAveEuler::setup_bins()
           cell_size_lamda_[dim] = (hi_lamda_[dim]-lo_lamda_[dim])/static_cast<double>(ncells_dim_[dim]);
           cell_size_[dim] = cell_size_lamda_[dim]*domain->h[dim];
       } else {
+	  // number of cells approximated by defect, hence larger cells
           ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_); // n cells in dimension dim 
 
 std::cout << "ncells_dim_:\t"  << ncells_dim_[dim] << std::endl;
@@ -410,7 +411,7 @@ std::cout << "ncells_dim_:\t"  << ncells_dim_[dim] << std::endl;
           cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
 std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
       }
-    }
+    } // loop over dimensions x,y,z
 
 
     for(int dim = 0; dim < 3; dim++)

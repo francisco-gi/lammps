@@ -75,6 +75,12 @@ class FixAveEuler : public Fix {
 
   // inline access functions for cell based values
 
+  inline double box_lo(int i)
+  {return lo_[i];}
+
+  inline double box_hi(int i)
+  {return hi_[i];}
+
   inline double cell_center(int i, int j)
   { return center_[i][j]; }
 
