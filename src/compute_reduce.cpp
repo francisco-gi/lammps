@@ -29,7 +29,7 @@
 using namespace LAMMPS_NS;
 
 enum{SUM,SUMSQ,MINN,MAXX,AVE,AVESQ};             // also in ComputeReduceRegion
-enum{UNKNOWN=-1,X,V,F,COMPUTE,FIX,VARIABLE};
+enum{UNKNOWN=-1,X,V,F,FH,COMPUTE,FIX,VARIABLE};
 enum{PERATOM,LOCAL};
 
 #define INVOKED_VECTOR 2
@@ -130,6 +130,17 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
       which[nvalues] = F;
       argindex[nvalues++] = 2;
 
+	// $$$$
+    } else if (strcmp(arg[iarg],"fhx") == 0) {
+      which[nvalues] = FH;
+      argindex[nvalues++] = 0;
+    } else if (strcmp(arg[iarg],"fhy") == 0) {
+      which[nvalues] = FH;
+      argindex[nvalues++] = 1;
+    } else if (strcmp(arg[iarg],"fhz") == 0) {
+      which[nvalues] = FH;
+      argindex[nvalues++] = 2;
+
     } else if (strncmp(arg[iarg],"c_",2) == 0 ||
                strncmp(arg[iarg],"f_",2) == 0 ||
                strncmp(arg[iarg],"v_",2) == 0) {
@@ -202,7 +213,7 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
   // setup and error check
 
   for (int i = 0; i < nvalues; i++) {
-    if (which[i] == X || which[i] == V || which[i] == F)
+    if (which[i] == X || which[i] == V || which[i] == F || which[i] == FH)
       flavor[i] = PERATOM;
 
     else if (which[i] == COMPUTE) {
@@ -505,6 +516,13 @@ double ComputeReduce::compute_one(int m, int flag)
       for (i = 0; i < nlocal; i++)
         if (mask[i] & groupbit) combine(one,f[i][aidx],i);
     } else one = f[flag][aidx];
+  // $$$$
+  } else if (which[m] == FH) {
+    double **fh = atom->smd_force_h;
+    if (flag < 0) {
+      for (i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) combine(one,fh[i][aidx],i);
+    } else one = fh[flag][aidx];
 
   // invoke compute if not previously invoked
 
@@ -627,7 +645,7 @@ bigint ComputeReduce::count(int m)
 {
   int vidx = value2index[m];
 
-  if (which[m] == X || which[m] == V || which[m] == F)
+  if (which[m] == X || which[m] == V || which[m] == F|| which[m] == FH)
     return group->count(igroup);
   else if (which[m] == COMPUTE) {
     Compute *compute = modify->compute[vidx];

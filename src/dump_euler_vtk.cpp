@@ -130,11 +130,12 @@ printf("DumpEulerVTK::write_hader_ascii\n");
   if (comm->me!=0) return;
 
  fprintf(fp,"# vtk DataFile Version 2.0\nLIGGGHTS mesh/VTK export\nASCII\n");
- fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
- fprintf(fp,"%-1.16e %-1.16e\n",boxxlo,boxxhi);
- fprintf(fp,"%-1.16e %-1.16e\n",boxylo,boxyhi);
 
-fprintf(fp,"%-1.16e %-1.16e\n",boxzlo,boxzhi);
+//  $$$$
+// fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
+// fprintf(fp,"%-1.16e %-1.16e\n",boxxlo,boxxhi);
+// fprintf(fp,"%-1.16e %-1.16e\n",boxylo,boxyhi);
+//fprintf(fp,"%-1.16e %-1.16e\n",boxzlo,boxzhi);
 
 }
 
