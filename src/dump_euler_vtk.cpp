@@ -120,13 +120,13 @@ int DumpEulerVTK::modify_param(int narg, char **arg)
 
 void DumpEulerVTK::write_header(bigint ndump)
 {
-printf("DumpEulerVTK::write_header\n");
+//printf("DumpEulerVTK::write_header\n");
   write_header_ascii(ndump);
 }
 
 void DumpEulerVTK::write_header_ascii(bigint ndump)
 {
-printf("DumpEulerVTK::write_hader_ascii\n");
+//printf("DumpEulerVTK::write_hader_ascii\n");
   if (comm->me!=0) return;
 
  fprintf(fp,"# vtk DataFile Version 2.0\nLIGGGHTS mesh/VTK export\nASCII\n");
@@ -143,20 +143,20 @@ printf("DumpEulerVTK::write_hader_ascii\n");
 
 int DumpEulerVTK::count()
 {
-printf("DumpEulerVTK::count\n");
+//printf("DumpEulerVTK::count\n");
   n_calls_ = 0;
   n_all_ = 0;
-printf("DumpEulerVTK::count\n");
-std::cout << fix_euler_ << "\n";
+//printf("DumpEulerVTK::count\n");
+//std::cout << fix_euler_ << "\n";
   return fix_euler_->ncells_pack();
-printf("DumpEulerVTK::count\n");
+//printf("DumpEulerVTK::count\n");
 }
 
 /* ---------------------------------------------------------------------- */
 
 void DumpEulerVTK::pack(int *ids)
 {
-printf("DumpEulerVTK::pack\n");
+//printf("DumpEulerVTK::pack\n");
   int m = 0;
 
   // have to stick with this order (all per-element props)
@@ -187,8 +187,8 @@ printf("DumpEulerVTK::pack\n");
     buf[m++] = fix_euler_->cell_radius(i);
     buf[m++] = fix_euler_->cell_pressure(i);
   }
-printf("*******************************************************\nbuf length is %d\n",m);
-printf("*******************************************************\n",m);
+//printf("*******************************************************\nbuf length is %d\n",m);
+//printf("*******************************************************\n",m);
   return ;
 }
 
@@ -196,22 +196,22 @@ printf("*******************************************************\n",m);
 
 void DumpEulerVTK::write_data(int n, double *mybuf)
 {
-printf("DumpEulerVTK::write_data\n");    //only proc 0 writes
+//printf("DumpEulerVTK::write_data\n");    //only proc 0 writes
     if (comm->me != 0) return;
 
     n_calls_++;
 
     // $$$$ the "+6" in next lines are added by mean for including the boundaries to the information will be dumped
     // grow buffer if necessary
-printf("n_all_ is : %d\n",n_all_);
-printf("n_all_max_ is : %d\n",n_all_max_);
-printf("n : %d\tsize_one : %d\tn*size_one : %d\n",n,size_one,n*size_one);
+//printf("n_all_ is : %d\n",n_all_);
+//printf("n_all_max_ is : %d\n",n_all_max_);
+//printf("n : %d\tsize_one : %d\tn*size_one : %d\n",n,size_one,n*size_one);
     if(n_all_+n*size_one > n_all_max_)
     {
         n_all_max_ = n_all_ + n*size_one;
-printf("Memory grow 1\n");	
+//printf("Memory grow 1\n");	
         memory->grow(buf_all_,n_all_max_,"DumpEulerVTK:buf_all_");
-printf("Memory grow 2\n");	
+//printf("Memory grow 2\n");	
     }
 
     // copy to buffer
@@ -225,7 +225,7 @@ printf("Memory grow 2\n");
 
 void DumpEulerVTK::write_data_ascii(int n, double *mybuf)
 {
-printf("DumpEulerVTK::write_data_ascii\n");
+//printf("DumpEulerVTK::write_data_ascii\n");
   int m, buf_pos;
 
   // n is the number of elements

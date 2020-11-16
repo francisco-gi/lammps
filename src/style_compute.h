@@ -53,6 +53,7 @@
 #include "compute_slice.h"
 #include "compute_smd_contact_radius.h"
 #include "compute_smd_damage.h"
+#include "compute_smd_force_interact.h"
 #include "compute_smd_hourglass_error.h"
 #include "compute_smd_internal_energy.h"
 #include "compute_smd_plastic_strain.h"

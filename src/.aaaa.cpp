@@ -36,21 +36,20 @@ enum{TYPE,RADIUS};
 
 ComputeSmdForceInteract::ComputeSmdForceInteract(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg),
-  pstyle(NULL), pindex(NULL), vlocal(NULL), alocal(NULL), main_type(NULL)
+  pstyle(NULL), pindex(NULL), vlocal(NULL), alocal(NULL), flocal(NULL), main_type(NULL)
 {
   if (narg < 4) error->all(FLERR,"Illegal compute smd/force/interact command");
 
   local_flag = 1;
   /* number of quantities required by the compute */
   nvalues = narg - 3;
+/*$$$$*/
+printf("NARG\t%d\n",narg);
+   ntypes = atom->ntypes;
   pstyle = new int[nvalues];
   pindex = new int[nvalues];
-/*$$$$*/
-ntypes = atom->ntypes;
-printf("NARG\t%d\n",narg);
 printf("NTYPES\t%d\n",ntypes);
 main_type = new int[ntypes];
-
   nvalues = 0;
   int iarg = 3;
   while (iarg < narg) {
@@ -70,7 +69,10 @@ printf("%s\n",arg[iarg]);
                              "Invalid keyword in compute smd/force/interact command");
       pstyle[nvalues] = PN;
       pindex[nvalues++] = n-1;
-
+// $$$$
+//    }
+//    else if (strcmp(arg[iarg],"f_hertz") == 0){
+//	pstyle[nvalues++] = F_HERTZ;
     }else break;
 
     iarg++;
@@ -106,15 +108,17 @@ printf("%s\n",arg[iarg]);
   else size_local_cols = nvalues;
 
   nmax = 0;
+//  ntypes = NULL;
   vlocal = NULL;
   alocal = NULL;
-//  flocal = NULL;
+  flocal = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
 
 ComputeSmdForceInteract::~ComputeSmdForceInteract()
 {
+//  memory->destroy(ntypes);
   memory->destroy(vlocal);
   memory->destroy(alocal);
 //  memory->destroy(flocal);
@@ -123,20 +127,19 @@ ComputeSmdForceInteract::~ComputeSmdForceInteract()
   delete [] main_type;
 }
 
-
 /* ---------------------------------------------------------------------- */
 
 
 /*only for 1d int array of positive numbers,returns the INDEX of the biggest value: e.g. if max value is array[i] -> then array_max output is i */
-int array_max_index(int *array, int length)
+int ComputeSmdForceInteract::array_max_index(int *array, int length)
 {
-//printf("CALL : array_max_index(\n");
+printf("CALL : array_max_index(\n");
   int x_max=0;
   int max_index=0;
   for(int i=0; i<length; i++){
-//	printf("\tArray_[%d]\t = %d\n",i,array[i]);
+	printf("Array_[%d]\t = %d\n",i,array[i]);
 	if (array[i]>x_max){
-//	printf("\t\tNEW MAX : Array_[%d]\t = %d\n",i,array[i]);
+	printf("NEW MAX : Array_[%d]\t = %d\n",i,array[i]);
 		x_max=array[i];
 		max_index = i;
 		}
@@ -184,11 +187,15 @@ void ComputeSmdForceInteract::compute_local()
   invoked_local = update->ntimestep;
 
   // count local entries and compute pair info
-
+/*$$$$*/
+printf("**************************\nCOMPUTE LOCAL  1\n");
   ncount = compute_pairs(0);
-//printf("**************************\nCOMPUTE LOCAL  2\n");
+
+printf("**************************\nCOMPUTE LOCAL  2\n");
   if (ncount > nmax) reallocate(ncount);
   size_local_rows = ncount;
+/*$$$$*/
+printf("**************************\nCOMPUTE LOCAL  3\n");
   compute_pairs(2);
 }
 
@@ -201,7 +208,7 @@ void ComputeSmdForceInteract::compute_local()
 
 int ComputeSmdForceInteract::compute_pairs(int flag)
 {
-  int i,j,m,n,ii,jj,inum,jnum,itype,jtype,ctype; // ctype is main type of contact
+  int i,j,m,n,ii,jj,inum,jnum,itype,jtype;
   tagint itag,jtag;
   double xtmp,ytmp,ztmp,delx,dely,delz;
   double rsq,radsum,eng,fpair,factor_coul,factor_lj;
@@ -209,7 +216,7 @@ int ComputeSmdForceInteract::compute_pairs(int flag)
   double *ptr;
 
   double **x = atom->x;
-  /* $$$$ */
+  /* $$$$ radius to contact_radius, specific for SMD hertz potential */
   double *radius = atom->contact_radius;
   tagint *tag = atom->tag;
   int *type = atom->type;
@@ -220,10 +227,7 @@ int ComputeSmdForceInteract::compute_pairs(int flag)
   int newton_pair = force->newton_pair;
 
 
-/*$$$$*/
-
-if(ntypes!=atom->ntypes) printf("\n************************************\n**********************************\n**********************************\n\n\n\nERROR\n**********************************\n**********************************\n\n\n"); 
-
+//printf("\tNTYPES\t%d\n",ntypes);
 
   // invoke half neighbor list (will copy or build if necessary)
 
@@ -245,25 +249,26 @@ if(ntypes!=atom->ntypes) printf("\n************************************\n*******
   Pair *pair = force->pair;
   double **cutsq = force->pair->cutsq;
 
+  m = 0;
 /* Zeroizing alocal array maybe better to move under flag==0*/
 if(alocal){
-//printf("PRINTING ALOCAL\n");
+printf("PRINTING ALOCAL\n");
 for(int iii=0; iii<(ntypes*(ntypes+1)/2); iii++){
 	for(int jjj = 0 ; jjj<nvalues  ; jjj++){
-//		printf("%d\t%d\t%lf\n",iii,jjj,alocal[iii][jjj]);
+		printf("%d\t%d\t%lf\n",iii,jjj,alocal[iii][jjj]);
 	alocal[iii][jjj]=0.;
 		}
 	}
 }
-  m = 0;
 
-/* start loop over i particles */
+/*start loop on i particle*/
   for (ii = 0; ii < inum; ii++) {
-  /* Set main_type to zero $$$$ */
-  for(int iii=0; iii<ntypes; iii++){
-//	printf("in %d loop\tmain_type[iii] = %d\n",ii,main_type[iii]);
-	main_type[iii]=0;
-	}
+
+/* $$$$ */
+for(int iii=0; iii<ntypes; iii++){
+printf("main_type[iii] = %lf\n",main_type[iii]);
+	main_type[iii]=0;}
+
     i = ilist[ii];
     if (!(mask[i] & groupbit)) continue;
 
@@ -276,14 +281,13 @@ for(int iii=0; iii<(ntypes*(ntypes+1)/2); iii++){
     jnum = numneigh[i];
 
 /*$$$$*/
-//printf("______________________________\nTYPE\t%d\n",itype);
+printf("##################\nTYPE of atom i\t%d\n",itype);
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
       factor_lj = special_lj[sbmask(j)];
       factor_coul = special_coul[sbmask(j)];
       j &= NEIGHMASK;
-	/*$$$$*/
-//	jtype = type[j];
+
       if (!(mask[j] & groupbit)) continue;
 
       // itag = jtag is possible for long cutoffs that include images of self
@@ -310,41 +314,28 @@ for(int iii=0; iii<(ntypes*(ntypes+1)/2); iii++){
       jtype = type[j];
 
       if (cutstyle == TYPE) {
-        if (rsq >= cutsq[itype][jtype]) continue;
+printf("cutstyle == TYPE\n");
+        if (rsq >= cutsq[itype][jtype])
+		 continue;
       } else {
+//printf("ELSE\n");
         radsum = radius[i] + radius[j];
-        if (rsq >= radsum*radsum) continue;
+printf("FOR TYPES %d-%d\tsqrt(rsq) = %lf\tr_i+r_j=%lf\tr_cut=%lf\n",itype,jtype,sqrt(rsq),radsum,sqrt(cutsq[i][j]));
+        if (rsq >= radsum*radsum){
+	printf("continue	r=%lf>r_c=%lf\n",sqrt(rsq),radsum);
+	 continue;}
       }
-
-	if(itype!=jtype && rsq<radsum*radsum){
-//	printf("CONTACT TYPE\t%d-%d\t+1\n",itype,jtype);
+	/* $$$$ */
+	/* If interparticle distance less than contact distance, increase +1 to the contact with molecule of jtype*/
+	if(itype!=jtype && rsq<cutsq[i][j]){
+printf("CONTACT TYPE\t%d-%d\t+1\n",itype,jtype);
 	main_type[jtype-1]++;
-//printf("main_t = %d\n",main_type[jtype-1]);
-	}
-
-
-      m++;
-    } // end of j loop
-
-//printf("Printing MAIN TYPE ARRAY\n");
-//for(int iii = 0; iii< ntypes  ; iii++)
-//{
-//printf("%d\t",main_type[iii]);
-//}
-//printf("\n");
-      if (flag==2) {
-//        if (singleflag)
-//          eng = pair->single(i,j,itype,jtype,rsq,factor_coul,factor_lj,fpair);
-//        else eng = fpair = 0.0;
-ctype = array_max_index(main_type,ntypes)+1;
-	m = ctype-itype;
-	if ( m < 0 ) continue; 
-//printf("j-i = %d - %d = %d\n",jtype,itype,m);
-//printf("\tm=%d\n",m);
-	if(itype!=1)
-	m += (int)((2*ntypes-itype+2)*(itype-1))/2;
-//if ( atom->smd_force_h[i][0]!=0 || atom->smd_force_h[i][1]!=0  ||  atom->smd_force_h[i][2]!=0  )
-//	printf("Contact_{%d-%d} -- m = %d\tforce = %lf\t%lf\t%lf\n",ctype,itype,m,atom->smd_force_h[i][0], atom->smd_force_h[i][1], atom->smd_force_h[i][2]);
+}
+      if (flag==1) {
+printf("\nCOMPUTE PAIRS FLAG IS 1\n");
+        if (singleflag)
+          eng = pair->single(i,j,itype,jtype,rsq,factor_coul,factor_lj,fpair);
+        else eng = fpair = 0.0;
 
         if (nvalues == 1) ptr = &vlocal[m];
         else ptr = alocal[m];
@@ -372,6 +363,50 @@ ctype = array_max_index(main_type,ntypes)+1;
           case PN:
             ptr[n] = pair->svector[pindex[n]];
             break;
+          }
+        }
+      } // end of if(flag==1)
+
+      m++;
+    } // end of j loop
+printf("END OF J LOOP\n");
+
+for(int iii=0; iii<ntypes; iii++)
+	if(itype==iii+1 && main_type[iii]!=0) printf("WARNING: self contact detected for type\t%d\t,detected %d\ttimes\n",itype,main_type[iii]);
+
+	/*$$$$*/
+	//printf("MAIN TYPE\n");
+			printf( "MAIN TYPE ARRAY\t for atom %d of type %d\n",ii,itype);
+		for(int iii=0; iii<ntypes; iii++)
+			printf( "\t%d\n",main_type[iii] );
+
+		printf( "MAX FOR INDEX:\t%d\n", array_max_index(main_type,ntypes) );
+//			printf("\n");
+
+/* $$$$ */
+/* 1 HOW TO SAVE IN PTR
+   2 WHAT HAPPEN WITH PTR THEN
+   3 WHAT WHEN I PRINT
+*/
+	if(flag==2){
+/* the first ntypes pairs are 1-1, 1-2, .., 1-ntypes
+   then, in order 2-2, 2-3, .., 2-ntype, 3-3, .., ..,
+   (ntypes-1)-(ntypes-1), (ntypes-1)-ntypes, ntypes-ntypes
+   In total thy are 0.5*ntypes*(ntypes+1) */
+/*  Computation of main contact*/
+/*	M CAN BE negative; THIS is saving the values in the incorrect place	*/
+	jtype = array_max_index(main_type,ntypes)+1;
+printf("FLAG == 2\titype = %d\tjtype = %d\n",itype,jtype);
+	m = jtype-itype;
+	if ( m < 0 ) m = -m; 
+if(itype!=1)
+	m += 0.5*(2*ntypes-itype+2)*(itype-1);
+//        if (nvalues == 1) ptr = &vlocal[m];
+//        else 
+	ptr = alocal[m];
+
+        for (n = 0; n < nvalues; n++) {
+          switch (pstyle[n]) {
           case FHX:
             ptr[n] += atom->smd_force_h[i][0];
             break;
@@ -382,12 +417,14 @@ ctype = array_max_index(main_type,ntypes)+1;
             ptr[n] += atom->smd_force_h[i][2];
             break;
           }
-        }
-      } // enf of if (flag)
-  }  // end of i loop
+	}
+      } // end of flag==2 case
 
-  m = (ntypes*(ntypes+1))/2;
-  return m;
+
+  }  // end of i loop
+printf("NUMBER OF MOLECULAR PAIRS\n",ntypes*(ntypes+1)/2);
+/*the return is the number of molecule pairs*/
+  return (ntypes*(ntypes+1)/2);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -398,14 +435,26 @@ void ComputeSmdForceInteract::reallocate(int n)
 
   while (nmax < n) nmax += DELTA;
 
+
+//    memory->destroy(flocal);
+//    memory->create(flocal,ntypes,3*ntypes,"smd/force/interact:farray_local");
+
   if (nvalues == 1) {
     memory->destroy(vlocal);
     memory->create(vlocal,nmax,"smd/force/interact:vector_local");
     vector_local = vlocal;
-  } else {
+//  } 
+/*$$$$*/
+//    else if(){
+//    memory->destroy(flocal);
+//    memory->create(flocal,ntypes,3*ntypes,"smd/force/interact:farray_local");
+//    array_local = flocal;
+    } else {
+/* The data is saved in alocal array, this is a number_of_pairs x number_of_observables array*/
     memory->destroy(alocal);
     memory->create(alocal,nmax,nvalues,"smd/force/interact:array_local");
     array_local = alocal;
+printf("MEMORY array_local allocated\n");
   }
 }
 

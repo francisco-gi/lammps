@@ -116,7 +116,7 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
 //  count_1++;
 //}
 
-  printf("\n\nInitialization\n\n");
+//  printf("\n\nInitialization\n\n");
   array_flag = 1;
   size_array_rows = BIG;
   size_array_cols = 3 + 1 + 3;
@@ -152,7 +152,7 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
 
   cell_size_ideal_rel_ = force->numeric(FLERR,arg[iarg++]);
 
-std::cout << std::endl << "**********************************************\nRELATIVE CELL SIZE\n" << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
+//std::cout << std::endl << "**********************************************\nRELATIVE CELL SIZE\n" << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
 
 
 //std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
@@ -204,9 +204,9 @@ std::cout << std::endl << "**********************************************\nRELAT
 
 
 //  std::cout << typeid(cell_size_ideal_rel_).name();
-std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
+//std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << std::endl;
 //printf("Cell size ideal relative : %ld\n",cell_size_ideal_rel);
-  printf("\n\nFixAveEuler::FixAveEuler - Completed\n\n");
+//  printf("\n\nFixAveEuler::FixAveEuler - Completed\n\n");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -214,7 +214,7 @@ std::cout << std::endl << "cell_size_ideal_rel_\t" << cell_size_ideal_rel_ << st
 FixAveEuler::~FixAveEuler()
 {
 
-printf("\n\nFixAveEuler::~FixAveEuler \n\n");
+//printf("\n\nFixAveEuler::~FixAveEuler \n\n");
   
   memory->destroy(cellhead_);
   memory->destroy(cellptr_);
@@ -229,7 +229,7 @@ printf("\n\nFixAveEuler::~FixAveEuler \n\n");
   memory->destroy(stress_);
   if (random_) delete random_;
 
-printf("\n\nFixAveEuler::~FixAveEuler - Completed\n\n");
+//printf("\n\nFixAveEuler::~FixAveEuler - Completed\n\n");
 
 }
 
@@ -237,13 +237,13 @@ printf("\n\nFixAveEuler::~FixAveEuler - Completed\n\n");
 
 void FixAveEuler::post_constructor()
 {
-  printf("fix ave euler - post_constructor()\n");
+//  printf("fix ave euler - post_constructor()\n");
   //  stress computation, just for pairwise contribution
   if(!compute_stress_)
   {
-    printf("_______________________________________\n");
-    printf("IN POST_CREATE  -  COMP_STRESS_ not initialized\n");
-    printf("_______________________________________\n");
+//    printf("_______________________________________\n");
+//    printf("IN POST_CREATE  -  COMP_STRESS_ not initialized\n");
+//    printf("_______________________________________\n");
         
         const char* arg[4];
         arg[0]="stress_faveu";
@@ -259,7 +259,7 @@ void FixAveEuler::post_constructor()
   }
 
   // ensure that the compute is calculated in the first time step
-    printf("In post_constructor - update timestep\n");
+//    printf("In post_constructor - update timestep\n");
   bigint nfirst = (update->ntimestep/nevery)*nevery + nevery;
 //    printf("In post_constructor Compute stress add step\n");
 //  compute_stress_->addstep(nfirst);
@@ -269,7 +269,7 @@ void FixAveEuler::post_constructor()
 
 int FixAveEuler::setmask()
 {
-  printf("fix ave euler - setmask()\n");
+//  printf("fix ave euler - setmask()\n");
   int mask = 0;
   mask |= END_OF_STEP;
   return mask;
@@ -279,7 +279,7 @@ int FixAveEuler::setmask()
 
 void FixAveEuler::init()
 {
-printf("fix ave euler - init()\n");
+//printf("fix ave euler - init()\n");
   if(!atom->radius_flag)
     error->fix_error(FLERR,this,"requires atom attribute radius");
   if(!atom->rmass_flag)
@@ -323,10 +323,10 @@ printf("fix ave euler - init()\n");
 
 void FixAveEuler::setup(int vflag)
 {
-printf("fix ave euler - setup\n");
+//printf("fix ave euler - setup\n");
     setup_bins();
     end_of_step();
-printf("\nFixAveEuler::setup  -  Concluded\n");
+//printf("\nFixAveEuler::setup  -  Concluded\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -341,7 +341,7 @@ printf("\nFixAveEuler::setup  -  Concluded\n");
 void FixAveEuler::setup_bins()
 {
 
- printf("fix ave euler - setup_bins\n"); 
+// printf("fix ave euler - setup_bins\n"); 
    int ibin;
 //std::cout << __cplusplus << std::endl ;
 
@@ -355,13 +355,13 @@ void FixAveEuler::setup_bins()
    // calc ideal cell size as multiple of max cutoff
     cell_size_ideal_ = cell_size_ideal_rel_ * (neighbor->cutneighmax-neighbor->skin);
   
-  printf("neighbor->cutneighmax-neighbor->skin : %lf\n",neighbor->cutneighmax-neighbor->skin); 
-  printf("Cell size ideal rel: %lf\n",cell_size_ideal_rel_);
-  printf("Cell size ideal: %lf\n",cell_size_ideal_);
+//  printf("neighbor->cutneighmax-neighbor->skin : %lf\n",neighbor->cutneighmax-neighbor->skin); 
+//  printf("Cell size ideal rel: %lf\n",cell_size_ideal_rel_);
+//  printf("Cell size ideal: %lf\n",cell_size_ideal_);
  
     for(int dim = 0; dim < 3; dim++)
     {
-      // get bounds
+      // GET BOUNDS
       if (triclinic_ == 0) {
 //	printf("TRICLINIC == 0 \n");
 //	std::cout << parallel_ << std::endl;
@@ -401,7 +401,7 @@ void FixAveEuler::setup_bins()
 	  // number of cells approximated by defect, hence larger cells
           ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_); // n cells in dimension dim 
 
-std::cout << "ncells_dim_:\t"  << ncells_dim_[dim] << std::endl;
+//std::cout << "ncells_dim_:\t"  << ncells_dim_[dim] << std::endl;
 
           if (ncells_dim_[dim] < 1) {
             ncells_dim_[dim] = 1;
@@ -409,7 +409,7 @@ std::cout << "ncells_dim_:\t"  << ncells_dim_[dim] << std::endl;
             error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
           }
           cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
-std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
+//std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
       }
     } // loop over dimensions x,y,z
 
@@ -439,7 +439,7 @@ std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
         memory->grow(mass_,ncells_max_,    "ave/euler:mass_");
         memory->grow(stress_,ncells_max_,7,"ave/euler:stress_");
     }
-printf("\nSpatial Arrays bin reallocated\n");
+//printf("\nSpatial Arrays bin reallocated\n");
     // calculate center coordinates for cells
     for(int ix = 0; ix < ncells_dim_[0]; ix++)
     {
@@ -463,7 +463,7 @@ printf("\nSpatial Arrays bin reallocated\n");
             }
         }
     }
-printf("\nCells center coordinates  computed\n");
+//printf("\nCells center coordinates  computed\n");
     // calculate weight_[icell]
     if(!region_)
     {
@@ -496,7 +496,7 @@ printf("\nCells center coordinates  computed\n");
                     weight_[ibin] += contribution;
             }
         }
-printf("\nCell weight calculated\n");
+//printf("\nCell weight calculated\n");
 
         // allreduce weights
         MPI_Sum_Vector(weight_,ncells_,world);
@@ -510,19 +510,22 @@ printf("\nCell weight calculated\n");
     
     if (comm->me == 0)
     {
-        if (screen) fprintf(screen,"Euler cell size on proc %d = %f (%d x %d x %d grid)\n",
-            comm->me,cell_size_ideal_,ncells_dim_[0],ncells_dim_[1],ncells_dim_[2]);
+//        if (screen)
+//	{
+//	fprintf(screen,"Euler cell size on proc %d = %f (%d x %d x %d grid)\n",
+//            comm->me,cell_size_ideal_,ncells_dim_[0],ncells_dim_[1],ncells_dim_[2]);
+//	}
         if (logfile) fprintf(logfile,"Euler cell size on proc %d = %f (%d x %d x %d grid)\n",
             comm->me,cell_size_ideal_,ncells_dim_[0],ncells_dim_[1],ncells_dim_[2]);
     }
-   printf("\nFixAveEuler::setup_bins  -  Terminated\n"); 
+//   printf("\nFixAveEuler::setup_bins  -  Terminated\n"); 
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixAveEuler::end_of_step()
 {
-   printf("\nFixAveEuler::end_of_step\n"); 
+//   printf("\nFixAveEuler::end_of_step\n"); 
     // have to adapt grid if box size changes
     if(box_change_size_ || (parallel_ && box_change_domain_))
     {
@@ -532,16 +535,16 @@ void FixAveEuler::end_of_step()
         setup_bins();
     }
 
-   printf("\nFixAveEuler::end_of_step  2\n"); 
+//   printf("\nFixAveEuler::end_of_step  2\n"); 
     // bin atoms
     bin_atoms();
 
-   printf("\nFixAveEuler::end_of_step  3\n"); 
+//   printf("\nFixAveEuler::end_of_step  3\n"); 
     // calculate Eulerian grid properties
     // performs allreduce if necessary
     calculate_eu();
 
-   printf("\nFixAveEuler::end_of_step  -  Concluded\n"); 
+//   printf("\nFixAveEuler::end_of_step  -  Concluded\n"); 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -550,7 +553,7 @@ int FixAveEuler::ncells_pack()
 {
 
 
-printf("\n\nFixAveEuler::ncells_pack\n\n");
+//printf("\n\nFixAveEuler::ncells_pack\n\n");
 
     // in parallel mode, each proc will pack
     if (parallel_)
@@ -571,7 +574,7 @@ printf("\n\nFixAveEuler::ncells_pack\n\n");
 
 void FixAveEuler::bin_atoms()
 {
-printf("\n\nFixAveEuler::bin_atoms\n\n");
+//printf("\n\nFixAveEuler::bin_atoms\n\n");
 
   int i,ibin;
   double **x = atom->x;
@@ -596,20 +599,19 @@ printf("\n\nFixAveEuler::bin_atoms\n\n");
   {
       if(! (mask[i] & groupbit)) continue;
 
+	/* bin of atom i*/
       ibin = coord2bin(x[i]);
 
       // particles outside grid may return values ibin < 0 || ibin >= ncells_
       // these are ignores
-      
       if (ibin < 0 || ibin >= ncells_) {
-        
         continue;
       }
 
       cellptr_[i] = cellhead_[ibin];
       cellhead_[ibin] = i;
   }
-printf("\n\nFixAveEuler::bin_atoms  -  Completed\n\n");
+//printf("\n\nFixAveEuler::bin_atoms  -  Completed\n\n");
 
 }
 
@@ -654,7 +656,7 @@ inline int FixAveEuler::coord2bin(double *x)
 void FixAveEuler::calculate_eu()
 {
     //int ncount;
-  printf("FixAveEuler::calculate_eu  - initialization\n");
+//  printf("FixAveEuler::calculate_eu  - initialization\n");
     double * const * const v = atom->v;
     double * const radius = atom->radius;
     double * const rmass = atom->rmass;
@@ -666,12 +668,12 @@ void FixAveEuler::calculate_eu()
     const double * const volume = atom->volume;
     const int superquadric_flag = atom->superquadric_flag;
     #endif
-printf("modify->clearstep_compute()\n");
+//printf("modify->clearstep_compute()\n");
     // wrap compute with clear/add
     modify->clearstep_compute();
 
-std::cout << INVOKED_PERATOM << std::endl;
-std::cout << compute_stress_ << std::endl;
+//std::cout << INVOKED_PERATOM << std::endl;
+//std::cout << compute_stress_ << std::endl;
 //std::cout << compute_stress_->invoked_flag << std::endl;
     // invoke compute if not previously invoked
 //printf("FixAveEuler::calculate_eu  -  Invoke compute\n");
@@ -697,7 +699,7 @@ std::cout << compute_stress_ << std::endl;
     // each particle can contribute to the cell that it has been binned
     // optionally plus its 26 neighs
 
-printf("FixAveEuler::calculate_eu  -  Loop on all binned particles\n");
+//printf("FixAveEuler::calculate_eu  -  Loop on all binned particles\n");
     for(int icell = 0; icell < ncells_; icell++)
     {
         ncount_[icell] = 0;
@@ -786,7 +788,7 @@ printf("FixAveEuler::calculate_eu  -  Loop on all binned particles\n");
     }
 
     // allreduce stress if not parallel
-printf("FixAveEuler::calculate_eu  -  MPI_SUM\n");
+//printf("FixAveEuler::calculate_eu  -  MPI_SUM\n");
     if(!parallel_ && ncells_ > 0)
     {
         MPI_Sum_Vector(&(stress_[0][0]),7*ncells_,world);
@@ -798,7 +800,7 @@ printf("FixAveEuler::calculate_eu  -  MPI_SUM\n");
 
     // wrap with clear/add
     modify->addstep_compute(update->ntimestep + exec_every_);
-printf("FixAveEuler::calculate_eu  -  End\n");
+//printf("FixAveEuler::calculate_eu  -  End\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -811,7 +813,7 @@ printf("FixAveEuler::calculate_eu  -  End\n");
 double FixAveEuler::compute_array(int i, int j)
 {
 
-printf("\n\nFixAveEuler::compute_array\n\n");
+//printf("\n\nFixAveEuler::compute_array\n\n");
 
   if(i >= ncells_) return 0.0;
 
