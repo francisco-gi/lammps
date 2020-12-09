@@ -3,7 +3,6 @@
 
     ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
     ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
-    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
     ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
     ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
     ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
@@ -107,9 +106,12 @@ class FixAveEuler : public Fix {
   void setup_bins();
   void bin_atoms();
   void calculate_eu();
+  void calculate_eu_sph();
   void allreduce();
   inline int coord2bin(double *x); 
-
+  void bin2coord(int bin, double *x); 
+  void bin2coord(int *icell, double *x); 
+  void pbc(int &x,int &y,int &z);
   bool parallel_;
 
   int exec_every_;
@@ -166,6 +168,9 @@ class FixAveEuler : public Fix {
   
   double *weight_;
 
+  // SPH weight for each cell - this is a particle based weight
+  double *w;
+
   // cell-based average radius
   double *radius_;
 
@@ -175,6 +180,9 @@ class FixAveEuler : public Fix {
   // cell-based mass
   double *mass_;
 
+  double *rho;
+  double **def_grad_cell;
+  
   // cell-based stress
   // [0]: pressure
   // [1-3]: 00-11-22

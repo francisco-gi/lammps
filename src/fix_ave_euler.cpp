@@ -58,7 +58,10 @@
 #include "memory.h"
 #include "error.h"
 #include "comm.h"
-
+//
+#include "pair.h"	// because we need access to members of the class
+#include "smd_kernels.h"	// because we need access to members of the class
+#include <Eigen/Eigen>
 
 #include <typeinfo>
 
@@ -67,7 +70,9 @@
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
-
+//
+using namespace SMD_Kernels;
+using namespace Eigen;
 
 //int main() {
 //  int i;
@@ -75,7 +80,12 @@ using namespace FixConst;
 //  return 0;
 //}
 
-
+static Matrix3d Deviator(Matrix3d M) {
+	Matrix3d eye;
+	eye.setIdentity();
+	eye *= M.trace() / 3.0;
+	return M - eye;
+}         
 
 
 /* ---------------------------------------------------------------------- */
@@ -99,11 +109,14 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   v_av_(NULL),
   vol_fr_(NULL),
   weight_(NULL),
+  w(NULL),
   radius_(NULL),
   ncount_(NULL),
   mass_(NULL),
   stress_(NULL),
   compute_stress_(NULL),
+  rho(NULL),
+  def_grad_cell(NULL),
   random_(0)
 {
   // this fix produces a global array
@@ -223,10 +236,13 @@ FixAveEuler::~FixAveEuler()
   memory->destroy(v_av_);
   memory->destroy(vol_fr_);
   memory->destroy(weight_);
+  memory->destroy(w);
   memory->destroy(radius_);
   memory->destroy(ncount_);
   memory->destroy(mass_);
+  memory->destroy(rho);
   memory->destroy(stress_);
+  memory->destroy(def_grad_cell);
   if (random_) delete random_;
 
 //printf("\n\nFixAveEuler::~FixAveEuler - Completed\n\n");
@@ -354,7 +370,8 @@ void FixAveEuler::setup_bins()
   
    // calc ideal cell size as multiple of max cutoff
     cell_size_ideal_ = cell_size_ideal_rel_ * (neighbor->cutneighmax-neighbor->skin);
-  
+
+//printf("cell_size_ideal_ = %lf\n",cell_size_ideal_ );
 //  printf("neighbor->cutneighmax-neighbor->skin : %lf\n",neighbor->cutneighmax-neighbor->skin); 
 //  printf("Cell size ideal rel: %lf\n",cell_size_ideal_rel_);
 //  printf("Cell size ideal: %lf\n",cell_size_ideal_);
@@ -410,9 +427,12 @@ void FixAveEuler::setup_bins()
           }
           cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
 //std::cout << "cell_size_:\t"  << cell_size_[dim] << std::endl;
+
       }
     } // loop over dimensions x,y,z
 
+if(logfile)
+	fprintf(logfile,"cell_size_ideal = %lf\t x,y,z= %lf\t%lf\t%lf\n",cell_size_ideal_,cell_size_[0],cell_size_[1],cell_size_[2]);  
 
     for(int dim = 0; dim < 3; dim++)
     {
@@ -434,10 +454,13 @@ void FixAveEuler::setup_bins()
         memory->grow(v_av_,  ncells_max_,3,"ave/euler:v_av_");
         memory->grow(vol_fr_,ncells_max_,  "ave/euler:vol_fr_");
         memory->grow(weight_,ncells_max_,  "ave/euler:weight_");
+        memory->grow(w,ncells_max_,  "ave/euler:w");
         memory->grow(radius_,ncells_max_,  "ave/euler:radius_");
         memory->grow(ncount_,ncells_max_,    "ave/euler:ncount_");
         memory->grow(mass_,ncells_max_,    "ave/euler:mass_");
         memory->grow(stress_,ncells_max_,7,"ave/euler:stress_");
+        memory->grow(rho,ncells_max_,    "ave/euler:rho");
+        memory->grow(def_grad_cell,ncells_max_,9,"ave/euler:def_grad_cell");
     }
 //printf("\nSpatial Arrays bin reallocated\n");
     // calculate center coordinates for cells
@@ -540,9 +563,10 @@ void FixAveEuler::end_of_step()
     bin_atoms();
 
 //   printf("\nFixAveEuler::end_of_step  3\n"); 
+calculate_eu_sph();
     // calculate Eulerian grid properties
     // performs allreduce if necessary
-    calculate_eu();
+//    calculate_eu();
 
 //   printf("\nFixAveEuler::end_of_step  -  Concluded\n"); 
 }
@@ -615,6 +639,283 @@ void FixAveEuler::bin_atoms()
 
 }
 
+/*	Periodic Boundary conditions on cells, if not periodic and cell outside box it returns -1 */
+
+void FixAveEuler::pbc(int &nx, int &ny, int &nz)
+{
+	if(domain->xperiodic)
+	{
+	if( nx>=ncells_dim_[0])
+	    nx-=ncells_dim_[0];
+	if( nx < 0 )
+	    nx+=ncells_dim_[0];
+	}
+
+	else
+	{
+	if( nx>=ncells_dim_[0])
+	    nx  = -1;
+	if( nx < 0 )
+	    nx = -1;
+	}
+
+
+	if(domain->yperiodic)
+	{
+	if( ny>=ncells_dim_[1])
+	    ny-=ncells_dim_[1];
+	if( ny < 0 )
+	    ny+=ncells_dim_[1];
+	}
+
+	else
+	{
+	if( ny>=ncells_dim_[1])
+	    ny  = -1;
+	if( ny < 0 )
+	    ny = -1;
+	}
+
+
+	if(domain->zperiodic)
+	{
+	if( nz>=ncells_dim_[2])
+	    nz-=ncells_dim_[2];
+	if( nz < 0 )
+	    nz+=ncells_dim_[2];
+	}
+
+	else
+	{
+	if( nz>=ncells_dim_[2])
+	    nz  = -1;
+	if( nz < 0 )
+	    nz = -1;
+	}
+}
+
+/* ----------------------------------------------------------------------
+	This member computes eulerian data according to SPH paradigm.
+	CAVEAT:
+	- This is working properly only for periodic boundary conditions. In case of non periodic boundaries the code will try to assign the values to non exixsting cells outside the simulation box if a particle dists from a boundary less than the kernel radius.
+	- It works only in 3 dimensions, as the original fix.
+	- It was written thinking only to NON-triclinic box.
+
+WORK TO DO
+	1 compute position of jcell
+	2 distance jcell-particle, hence kernel, hence contribution to vol frac, etc...
+	3 check if nall is correct to be local+ghost
+	4 carefullly check names
+	5 add MPI_COMMANDS
+	6 check values, make them printable via dump
+ ----------------------------------------------------------------------*/
+
+void FixAveEuler::calculate_eu_sph()
+{
+    int itmp=0;
+    Matrix3d *F = (Matrix3d *) force->pair->extract("smd/tlsph/Fincr_ptr", itmp); 
+	if (F == NULL) {
+	error->all(FLERR, "fix_ave_euler could not access deformation tensor. Are the matching pair styles present?");}
+    double *det_def_grad = (double *) force->pair->extract("smd/tlsph/detF_ptr", itmp); 
+	if (det_def_grad == NULL) {
+	error->all(FLERR, "fix_ave_euler could not access smd/tlsph/detF_ptr. Are the matching pair styles present?");}
+
+//printf("DET  BEGIN :   %lf\n",det_def_grad[0]);
+
+    Matrix3d *T = (Matrix3d *) force->pair->extract("smd/tlsph/stressTensor_ptr", itmp);
+	if (T == NULL) {
+	error->all(FLERR, "fix_ave_euler could not access stress tensors. Are the matching pair styles present?");}
+    int nall = atom->nlocal + atom->nghost;
+for(int i=0; i<nall; i++) 
+	det_def_grad[i] = F[i].determinant();
+//printf("DET  BEGIN :   %lf\n",det_def_grad[0]);
+    double * const * const x = atom->x;
+    double * const * const v = atom->v;
+    double * const  vfrac = atom->vfrac;
+//    double * const * const v = atom->v;
+    int *mask = atom->mask;
+    double * const  sph_radius = atom->radius;
+    double * const radius = atom->contact_radius;
+    double * const rmass = atom->rmass;
+    const double * const volume = atom->vfrac;
+//    double ** def_grad_part = atom->smd_data_9;
+    double dx,dy,dz;
+    double wf,wfd,r;
+    int jcellx,jcelly,jcellz;
+    int icellx,icelly,icellz;
+
+double y[3];
+int icell_arr[3];
+double def_grad_part[9];
+double stress_part[7];
+double new_vol;
+double von_mises_stress;
+Matrix3d stress_deviator;
+
+/* half number of cells along each direction for which the kernel of a particle is not zero. Equivalent to radius in numbver if cells */
+    double ncells_sph[3];
+    // wrap compute with clear/add
+    modify->clearstep_compute();
+
+    for(int i = 0; i < ncells_; i++)
+    {
+        ncount_[i] = 0;
+        vectorZeroize3D(v_av_[i]);
+        vol_fr_[i] = 0.;
+        radius_[i] = 0.;
+        mass_[i] = 0.;
+        vectorZeroizeN(stress_[i],7);
+        rho[i] = 0.;
+        vectorZeroizeN(def_grad_cell[i],9);
+        vectorZeroizeN(stress_[i],7);
+    }
+//printf("cell_size[0] =  %lf\n",cell_size_[0]); 
+//printf("SPH_radius[0] =  %lf\n",sph_radius[0]); 
+//printf("ncells_sph = %lf\t%d\n\n", static_cast<int>( sph_radius[0]*cell_size_inv_[0] + 1.),  ( sph_radius[0]*cell_size_inv_[0] + 1.) );
+
+
+	/* start atom loop*/
+
+  for (int iatom= 0; iatom < nall; iatom++)
+  {
+	def_grad_part[0] = F[iatom](0,0);
+	def_grad_part[1] = F[iatom](0,1);
+	def_grad_part[2] = F[iatom](0,2);
+	def_grad_part[3] = F[iatom](1,0);
+	def_grad_part[4] = F[iatom](1,1);
+	def_grad_part[5] = F[iatom](1,2);
+	def_grad_part[6] = F[iatom](2,0);
+	def_grad_part[7] = F[iatom](2,1);
+	def_grad_part[8] = F[iatom](2,2);
+
+	stress_deviator = Deviator(T[iatom]);
+	von_mises_stress =   sqrt(3. / 2.) * stress_deviator.norm();
+	stress_part[0] = von_mises_stress;
+	stress_part[1] = T[iatom](0,0);	// xx
+	stress_part[2] = T[iatom](1,1);	// yy
+	stress_part[3] = T[iatom](2,2);	// zz
+	stress_part[4] = T[iatom](0,1);	// xy
+	stress_part[5] = T[iatom](0,2);	// xz
+	stress_part[6] = T[iatom](1,2);	// yz
+
+        if(! (mask[iatom] & groupbit)) continue;
+
+	for(int dim = 0 ;  dim < 3 ; dim++)
+	{
+	  ncells_sph[dim] = static_cast<int>( sph_radius[iatom]*cell_size_inv_[dim] + 1.);
+	}
+
+//	printf("\n\n===================\niatom x y z\n");
+//	printf("%d\t%lf\t%lf\t%lf\t\n",iatom,x[iatom][0],x[iatom][1],x[iatom][2]);
+	/* cell at the center of the volume we are considering */
+	int icell = coord2bin(x[iatom]);
+
+	// particles outside grid may return values ibin < 0 || ibin >= ncells_
+        // these are ignores
+        if (icell < 0 || icell >= ncells_) {
+	continue;
+	}
+
+//	printf("icell %d\n",icell);
+
+	/* Loop over neighbour cells in SPH radius */
+	 for( double  i = -ncells_sph[0]-1 ; i < ncells_sph[0]+1 ; i++){
+		dx =  i*cell_size_[0];
+	   for( double  j = -ncells_sph[1]-1  ; j < ncells_sph[1]+1 ; j++){
+		dy =  j*cell_size_[1];
+	     for( double k = -ncells_sph[2]-1 ; k < ncells_sph[1]+1 ; k++){
+		dz =  k*cell_size_[2];
+		/* check if cell inside SPH radius */
+		if ( (dx*dx +dy*dy + dz*dz) > (sph_radius[iatom]*sph_radius[iatom]) )
+			continue;
+
+		/* determining x,y,z indeces of i cell containing i particle */
+		icellz = static_cast<int>( icell/(ncells_dim_[0]*ncells_dim_[1]) );
+		icelly = static_cast<int>( ( icell-icellz*ncells_dim_[1]*ncells_dim_[0] )/ncells_dim_[0] );
+		icellx = icell - ncells_dim_[0]*ncells_dim_[1]*icellz - ncells_dim_[0]*icelly ;
+
+		/* determination of indices of cell j */
+		jcellx = icellx + (int)i;
+		jcelly = icelly + (int)j;
+		jcellz = icellz + (int)k;
+		pbc(jcellx,jcelly,jcellz);
+		/* If cell outside box simulation and no pbc along that direction*/
+		if(jcellx==-1 || jcelly==-1 || jcellz==-1)
+			continue;
+		int jcell = ncells_dim_[0]*ncells_dim_[1]*jcellz + ncells_dim_[0]*jcelly + jcellx;
+		
+		/* computing distance particle-cell_center, using dx,dy,dz for a second purpose */
+		dx = x[iatom][0] - center_[jcell][0];
+		dy = x[iatom][1] - center_[jcell][1];
+		dz = x[iatom][2] - center_[jcell][2];
+//		printf("%lf\t- %lf\t= %lf\n",x[iatom][2],center_[jcell][2],dz);
+		r = dx*dx + dy*dy + dz*dz;
+		spiky_kernel_and_derivative(sph_radius[iatom],r,domain->dimension,wf,wfd);
+//printf("WF = %lf\n", wf);		
+		/* check compatibility with SMD */
+		new_vol = vfrac[iatom]*det_def_grad[iatom];
+//printf("VOL = %lf\n", vfrac[iatom] );
+//printf("Det(F) = %lf\n", det_def_grad[iatom] );
+//printf("NEW VOL = %lf\n", new_vol);		
+		rho[jcell] += wf*rmass[iatom];
+		mass_[jcell] += wf*rmass[iatom]*(new_vol); // volume in current configuration
+		vol_fr_[jcell] += wf*new_vol*new_vol;
+		ncount_[jcell] += wf*new_vol;
+
+//		vol_fr_[jcell] = 1111;
+
+		for(int l = 0; l < 9; l++)
+		{
+			def_grad_cell[jcell][l] += wf*def_grad_part[l]*new_vol;
+			if( l < 7 )
+			stress_[jcell][l] += wf*new_vol*stress_part[l];
+//			if( l < 7 )
+//			stress_[jcell][l] = 5555.0 ;
+		}
+	     } // end of z loop
+ 	   }  // end of y loop
+	 }  // end of z loop
+
+//printf("%d\t%d\t%d\n",icellx,icelly,icellz);
+//printf("%d\t%d\t%d\n",icellx,icelly,icellz);
+
+  }  // end of particle loop
+
+    // allreduce contributions so far if not parallel
+    if(!parallel_ && ncells_ > 0)
+    {
+        MPI_Sum_Vector(&(def_grad_cell[0][0]),9*ncells_,world);
+        MPI_Sum_Vector(vol_fr_,ncells_,world);
+        MPI_Sum_Vector(rho,ncells_,world);
+        MPI_Sum_Vector(mass_,ncells_,world);
+        MPI_Sum_Vector(ncount_,ncells_,world);
+        MPI_Sum_Vector(&(stress_[0][0]),7*ncells_,world);
+    }
+}
+
+/*	Returns lower side of the cell */
+void FixAveEuler::bin2coord(int bin, double *x)
+{
+	int icell[3];
+	icell[2] = static_cast<int>( bin/(ncells_dim_[0]*ncells_dim_[1]) );
+	icell[1] = static_cast<int>( ( bin-icell[2]*ncells_dim_[1]*ncells_dim_[0] )/ncells_dim_[0] );
+	icell[0] = bin - ncells_dim_[0]*ncells_dim_[1]*icell[2] - ncells_dim_[0]*icell[1] ;
+	
+	for(int dim = 0; dim < domain->dimension; dim++ )
+	{
+	  x[dim] = icell[dim]*cell_size_[dim];
+	}
+}
+
+/*	Returns lower side of the cube */
+void FixAveEuler::bin2coord(int *icell, double *x)
+{
+	for(int dim = 0; dim < domain->dimension; dim++ )
+	{
+	  x[dim] = icell[dim]*cell_size_[dim];
+	}
+}
+
 /* ----------------------------------------------------------------------
    map coord to grid, also return ix,iy,iz indices in each dim
 ------------------------------------------------------------------------- */
@@ -645,7 +946,8 @@ inline int FixAveEuler::coord2bin(double *x)
       iCell[i] = static_cast<int> (float_iCell[i]);
     }
   }
-//printf("\n\nFixAveEuler::coord2bin  -  Returning\n\n");
+//printf("FixAveEuler::coord2bin  -  Returning\n");
+//printf("%d\t%d\t%d\n",iCell[0],iCell[1],iCell[2]);
   return iCell[2]*ncells_dim_[1]*ncells_dim_[0] + iCell[1]*ncells_dim_[0] + iCell[0];
 }
 
@@ -735,9 +1037,9 @@ void FixAveEuler::calculate_eu()
             radius_[icell] += r;
             mass_[icell] += rmass[iatom];
             ncount_[icell]++;
-        }
+        }  // end of particle loop
 
-    }
+    } // end of cell loop
 
     // allreduce contributions so far if not parallel
     if(!parallel_ && ncells_ > 0)

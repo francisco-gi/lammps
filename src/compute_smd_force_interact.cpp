@@ -77,8 +77,8 @@ printf("%s\n",arg[iarg]);
   }
 
   // optional args
-
-  cutstyle = TYPE;
+  /* changend staqndard, now uit is RADIUS instead of TYPE, the cutoff considered for computing contact changes */
+  cutstyle = RADIUS;
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"cutoff") == 0) {
@@ -92,7 +92,7 @@ printf("%s\n",arg[iarg]);
   }
 
   // error check
-
+  // $$$$ This radius flag is checking for the irrelevant radius, the kernel one
   if (cutstyle == RADIUS && !atom->radius_flag)
     error->all(FLERR,"Compute smd/force/interact requires atom attribute radius");
 
@@ -210,7 +210,7 @@ int ComputeSmdForceInteract::compute_pairs(int flag)
 
   double **x = atom->x;
   /* $$$$ */
-  double *radius = atom->contact_radius;
+  double *radius = atom->contact_radius;  // SMD specific, usually it would be atom->radius, but this is referred kernel in SMD
   tagint *tag = atom->tag;
   int *type = atom->type;
   int *mask = atom->mask;
@@ -240,8 +240,8 @@ if(ntypes!=atom->ntypes) printf("\n************************************\n*******
   //   need to insure I,J pair is only output by one proc
   //   use same itag,jtag logic as in Neighbor::neigh_half_nsq()
   // for flag = 0, just count pair interactions within force cutoff
-  // for flag = 1, calculate requested output fields
-
+  // for flag = 1, calculate requested output fields, never used, it is an old legacy of another compute
+  // for flag = 2, calculate requested output fields in the SPH paradigm
   Pair *pair = force->pair;
   double **cutsq = force->pair->cutsq;
 
@@ -259,11 +259,12 @@ for(int iii=0; iii<(ntypes*(ntypes+1)/2); iii++){
 
 /* start loop over i particles */
   for (ii = 0; ii < inum; ii++) {
-  /* Set main_type to zero $$$$ */
+  /* Set main_type (of the contact) to zero $$$$ */
   for(int iii=0; iii<ntypes; iii++){
 //	printf("in %d loop\tmain_type[iii] = %d\n",ii,main_type[iii]);
 	main_type[iii]=0;
 	}
+
     i = ilist[ii];
     if (!(mask[i] & groupbit)) continue;
 
@@ -287,7 +288,7 @@ for(int iii=0; iii<(ntypes*(ntypes+1)/2); iii++){
       if (!(mask[j] & groupbit)) continue;
 
       // itag = jtag is possible for long cutoffs that include images of self
-
+// To check if it make sense this part of the code, it was part of the old code
       if (newton_pair == 0 && j >= nlocal) {
         jtag = tag[j];
         if (itag > jtag) {
@@ -316,13 +317,14 @@ for(int iii=0; iii<(ntypes*(ntypes+1)/2); iii++){
         if (rsq >= radsum*radsum) continue;
       }
 
+/* an improvement considering self contact would be to count the contribution only if fh defferent from 0 */
 	if(itype!=jtype && rsq<radsum*radsum){
 //	printf("CONTACT TYPE\t%d-%d\t+1\n",itype,jtype);
 	main_type[jtype-1]++;
 //printf("main_t = %d\n",main_type[jtype-1]);
 	}
 
-
+	/* this m is counting the number of atomic pairs in the contact radius volume, quantity deprecated */
       m++;
     } // end of j loop
 
@@ -351,27 +353,7 @@ ctype = array_max_index(main_type,ntypes)+1;
 
         for (n = 0; n < nvalues; n++) {
           switch (pstyle[n]) {
-          case DIST:
-            ptr[n] = sqrt(rsq);
-            break;
-          case ENG:
-            ptr[n] = eng;
-            break;
-          case FORCE:
-            ptr[n] = sqrt(rsq)*fpair;
-            break;
-          case FX:
-            ptr[n] = delx*fpair;
-            break;
-          case FY:
-            ptr[n] = dely*fpair;
-            break;
-          case FZ:
-            ptr[n] = delz*fpair;
-            break;
-          case PN:
-            ptr[n] = pair->svector[pindex[n]];
-            break;
+	/* only admnetted cases are the Hertzian related */
           case FHX:
             ptr[n] += atom->smd_force_h[i][0];
             break;

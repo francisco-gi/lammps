@@ -413,8 +413,8 @@ void PairTlsph::PreCompute() {
                         /*
                          * make sure F stays within some limits
                          */
-
-						
+/***$$$$****/	
+//printf("DET(F) = %lf\n",detF[i]);						
 			if ((detF[i] < DETF_MIN) || (detF[i] > DETF_MAX) || (numNeighsRefConfig[i] == 0))
 			{
                                 printf("deleting particle [" TAGINT_FORMAT "] because det(F)=%f is outside stable range %f -- %f \n", tag[i],
@@ -920,6 +920,8 @@ void PairTlsph::AssembleStress() {
                                 mass_specific_energy = e[i] / rmass[i]; // energy per unit mass
                                 rho = rmass[i] / (detF[i] * vfrac[i]);
                                 vol_specific_energy = mass_specific_energy * rho; // energy per current volume
+/***$$$$****/	
+//printf("ASSEMBLE-STRESS : DET(F) = %lf\n",detF[i]);
 
                                 /*
                                  * pressure: compute pressure rate p_rate and final pressure pFinal
