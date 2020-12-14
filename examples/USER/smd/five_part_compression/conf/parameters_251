@@ -1,0 +1,18 @@
+
+#log log.${N_0}_E_${E}
+
+variable	N_0	equal 251	# number of SMD particles per molecule
+variable	l_0	equal 0.25	# interparticle distance variable	0.25 0.15 0.1 0.08 0.05 for 251 1237 4139 8127 33371
+
+variable	contact_radius	equal 1.5*0.5*${l_0} # 1.5 the half lattice constant
+
+variable	molecule_max_id 	equal	5
+
+# filenames and usefull paths
+variable	read_data_filename	string conf/read_data_five_${N_0}
+variable	dump_path		string dump/dump_E1_${E}_E2_${contact_stiffness}_rc_${contact_radius}_nu_${nu}
+variable	tlsph_pair_coeff_path	string conf/pair_coeff_${molecule_max_id}
+
+# Dump frequencies
+variable        dumpFreq  equal 500
+variable        dumpFreq2 equal 500

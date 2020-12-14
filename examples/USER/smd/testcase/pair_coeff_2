@@ -1,0 +1,8 @@
+pair_coeff	1 1 smd/tlsph *COMMON ${rho} ${E} ${nu} ${q1} ${q2} ${hg} ${cp} &
+		*STRENGTH_LINEAR &
+		*EOS_LINEAR &
+		*END
+pair_coeff	2 2 smd/tlsph *COMMON ${rho} ${E} ${nu} ${q1} ${q2} ${hg} ${cp} &
+		*STRENGTH_LINEAR &
+		*EOS_LINEAR &
+		*END

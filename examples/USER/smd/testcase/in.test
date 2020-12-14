@@ -1,0 +1,194 @@
+
+####################################################################################################
+#
+# Simple SMD - TLSPH - script.
+# Needs:	-pair_coeff_N, file for tlsph pair coefficient
+#		N is the number of molecules, in this case is fixed to 2.
+#
+#	Testcase script. 
+#	It initialize two square shaped, flat, SMD-molecules composed by 4 smd-atoms each.
+#	Molecules are initialized parallel one to the other and with a certain overlap. 
+#	It is easily possible to customize the initial configuration to any other uncommenting
+#	and modifying the 'create_atoms' and the 'velocity' command lines. And commenting the 
+#	'lattice', 'create_atoms' now used commands.
+#	
+# unit sytem: GPa / mm / ms
+#
+####################################################################################################
+
+####################################################################################################
+# MATERIAL PARAMETERS
+####################################################################################################
+variable        rho equal 1000 # initial mass density 
+variable        E equal 200 # Young's modulus
+variable        nu equal 0.4 # Poisson ratio
+#variable        sigma_yield equal 0.051 # plastic yield stress
+variable        contact_stiffness equal 1.5*${E} # contact stress for contact force between molecules
+variable        q1 equal 0.06 # standard artificial viscosity linear coefficient
+variable        q2 equal 0.0  # standard artificial viscosity quadratic coefficient
+variable        hg equal 10.0 # hourglass control coefficient
+variable        cp equal 1.0 # heat capacity of material -- not used here
+
+####################################################################################################
+# INITIALIZE LAMMPS
+####################################################################################################
+dimension       3
+units		si
+boundary        p p p  # simulation box boundaries
+atom_style      smd
+atom_modify	map array
+comm_modify     vel yes
+neigh_modify    every 10 delay 0 check yes # re-build neighbor list every 10 steps
+newton          off
+
+####################################################################################################
+#	and Input Output parameters
+####################################################################################################
+
+variable	l_0	equal 1	# interparticle distance
+variable	contact_radius	equal 1.5*${l_0}
+
+variable	molecule_max_id equal 2
+
+variable	dump_path		string dump/dump
+variable	tlsph_pair_coeff_path	string pair_coeff_${molecule_max_id}
+
+variable        dumpFreq equal 5
+
+####################################################################################################
+####################################################################################################
+
+# Useful variables
+
+
+####################################################################################################
+# READ AND COMPLETE GEOMETRY
+####################################################################################################
+
+variable	Lx equal 4
+variable	Ly equal 4
+variable	Lz equal 7
+region		box block 0 ${Lx} 0  ${Ly} 0 ${Lz} units box
+
+create_box 	${molecule_max_id} box
+
+####
+#### $$$
+lattice		sc	${l_0}
+region box1 block 1 1.5 0.5 2 0. 1. units box
+region box2 block 2 2.5 0.5 2 0. 1. units box
+#region box3 block 1 2.5 0.5 2 2. 3. units box
+
+create_atoms 1 region box1
+create_atoms 2 region box2
+#create_atoms 3 region box3
+
+
+###########################################################################
+##	Another option for initialization, allows for more flexibility	###
+###########################################################################
+#create_atoms	1 single 1 0 0 
+#create_atoms	1 single 1 0 2
+#create_atoms	1 single 1 2 0 
+#create_atoms	1 single 1 2 2 
+
+#create_atoms	2 single 2.5 0 0 
+#create_atoms	2 single 2.5 2 0 
+#create_atoms	2 single 2.5 0 2 
+#create_atoms	2 single 2.5 2 2 
+
+#create_atoms	2 single 3.5 0 0 
+#create_atoms	2 single 3.5 2 0 
+#create_atoms	2 single 3.5 0 2 
+#create_atoms	2 single 3.5 2 2 
+
+#create_atoms	3 single 3.5 0 3.5
+#create_atoms	3 single 3.5 2 3.5 
+#create_atoms	3 single 1. 0 3.5 
+#create_atoms	3 single 1. 2 3.5 
+#create_atoms	3 single 1. 1 3.5 
+#change_box	all boundary	sm sm sm 
+#change_box	all boundary	p p s	remap
+
+
+#######################################
+##	groups
+##
+group           tlsph id >= 1	
+group		1 type 1
+group		2 type 2
+#group		3 type 3
+
+####################################################################################################
+# SETTING VOLUME/MASS/SPH PARAMETERS and DISCRETIZATION PARAMETERS
+####################################################################################################
+
+variable	h	equal 2*${l_0}
+variable	vol_one equal ${l_0}^3
+
+set             group all volume ${vol_one}
+set             group all smd/mass/density ${rho}
+set             group all diameter ${h} # set SPH kernel radius  
+set		group all smd/contact/radius ${contact_radius}
+
+variable skin equal 0.3*${h}
+neighbor ${skin} bin
+
+####################################################################################################
+# INTERACTION PHYSICS / MATERIAL MODEL
+# One rubber ring is linear elastic, the other rubber ring is elastic-ideal plastic.
+# Contact forces between both rubber rings are used to realize physical contact.
+####################################################################################################
+
+pair_style     	hybrid/overlay	smd/tlsph smd/hertz 1.0
+
+pair_coeff	*${molecule_max_id}	*${molecule_max_id}	smd/hertz	${contact_stiffness}
+include 	${tlsph_pair_coeff_path}
+
+####################################################################################################
+# SETTING VELOCITIES
+####################################################################################################
+
+#velocity	all set 0.2 0 0 sum no units box
+velocity	1 set 0.05 0 0.02 sum no units box
+velocity	2 set -0.01 0 0.05 sum no units box
+#velocity	3 set 0.002 0.01 -0.02 sum no units box
+
+####################################################################################################
+# TIME INTEGRATION
+####################################################################################################
+
+
+fix             dtfix tlsph smd/adjust_dt 0.1 # dynamically adjust time increment every step
+fix             integration_fix tlsph smd/integrate_tlsph
+run 0
+
+####################################################################################################
+# SPECIFY TRAJECTORY OUTPUT
+####################################################################################################
+
+#compute         S all smd/tlsph/stress # Cauchy stress tensor
+#compute         nn all smd/tlsph/num/neighs # number of neighbors for each particle
+#compute         cr all smd/contact/radius
+#compute         eint all smd/internal/energy
+#compute         alleint all reduce sum c_eint
+#variable        etot equal c_alleint+ke+pe
+
+
+compute contact all smd/force/interact fhx fhy fhz cutoff radius
+dump 1 all local ${dumpFreq}  ${dump_path}.tmp.*.dat index c_contact[1] c_contact[2]  c_contact[3] 
+
+dump            dump_id all custom ${dumpFreq} ${dump_path}.*.liggghts id type x y z fx fhx fy fhy fz fhz
+
+# id type x y z vx vy vz fx fy fz fhx fhy fhz&
+#                c_S[1] c_S[2] c_S[3] c_S[4] c_S[5] c_S[6] c_S[7]  radius c_nn 
+
+####################################################################################################
+# STATUS OUTPUT
+####################################################################################################
+thermo          1
+thermo_style    custom step dt f_dtfix
+
+####################################################################################################
+run 10
+

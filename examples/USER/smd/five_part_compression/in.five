@@ -1,0 +1,205 @@
+
+####################################################################################################
+#
+# SMD TLSPH script.
+# A setup of five lying on the same plane, in a cross configuration with periodic boundary condition along the two x and y directoins.
+# The simulation box is compressed along x direction. Contact forces, box size, and other info are written in output files.
+#
+# A simple graphical rapresentation of the setup, with some periodic boundary images depicted as '0' instead of 'O'.
+#
+#	^ y
+#	|
+#	 --> x
+#		 _ _ _ _ _ _ _ _ _
+#		|  0  |  O  |  0  |
+#		|0 0 0|O O O|0 0 0|
+#		|  0  |  O  |  0  |
+#		 _ _ _ _ _ _ _ _ _ 
+#		|  0  |  0  |
+#		|0 0 0|0 0 0|
+#		|  0  |  0  |
+#
+# Needs:	- a folder 'dump', for writing output;
+#		- a folder 'conf', with configuration files;
+#		- in folder 'conf'  --'parameters_N', N number of particles per mol, file the sets I/O, number of part, contact radius etc..
+#		- in folder 'conf'  --'read_data_N',  file for SMD initial configuration
+#		- in folder 'conf'  --'pair_coeff_5', 5 are the SMD-molecules, file for tlsph pair_coeff settings.
+#
+# unit sytem: GPa / mm / ms
+#
+####################################################################################################
+
+####################################################################################################
+# MATERIAL PARAMETERS
+####################################################################################################
+variable        rho equal 1000 # initial mass density 
+variable        E equal 2*174 # Young's modulus
+variable        nu equal 0.4 # Poisson ratio
+#variable        sigma_yield equal 0.051 # plastic yield stress
+variable        contact_stiffness equal 1.5*${E} # contact stress for contact force between molecules
+variable        q1 equal 0.08 # standard artificial viscosity linear coefficient
+variable        q2 equal 0.0  # standard artificial viscosity quadratic coefficient
+variable        hg equal 10.0 # hourglass control coefficient
+variable        cp equal 1.0 # heat capacity of material -- not used here
+
+####################################################################################################
+# USER DEFINED PARAMETERS FOR INPUT AND OUTPUT
+# important quantities as number of particles, dump path, contact radius for hertzian potential are defined
+# changing the number in the name of the file, simulation with different number of particles are performed
+# the number means the smd-atoms that compose each smd-molecule. Availables 251, 1237, 4139, 8217 .
+include 	conf/parameters_251
+
+####################################################################################################
+# INITIALIZE LAMMPS
+####################################################################################################
+dimension       3
+units		si
+boundary        f f f  # simulation box boundaries
+atom_style      smd
+atom_modify	map array
+comm_modify     vel yes
+neigh_modify    every 10 delay 0 check yes # re-build neighbor list every 10 steps
+newton          off
+
+
+####################################################################################################
+# READ AND COMPLETE GEOMETRY
+####################################################################################################
+read_data	${read_data_filename}
+
+####################################################################################################
+# SETTING PARTICLE PARAMETERS and DISCRETIZATION PARAMETERS
+####################################################################################################
+
+variable	h	equal 3*${l_0}
+variable	vol_one equal ${l_0}^3
+
+set             group all volume ${vol_one}
+set             group all smd/mass/density ${rho}
+set             group all diameter ${h} # set SPH kernel radius  
+set		group all smd/contact/radius ${contact_radius}
+
+variable skin equal 0.3*${h}
+neighbor ${skin} bin
+
+####################################################################################################
+# Defining values useful to divide the particles in groups
+####################################################################################################
+
+variable	R_ef	  equal	lx/6
+print "R_ef = ${R_ef}"
+variable	x_W_center equal	${R_ef}  # +1.1*${l_0}
+variable	x_C_center equal	${x_W_center}+2*${R_ef}
+variable	x_E_center equal	${x_C_center}+2*${R_ef}
+variable	y_S_center equal	${R_ef}
+variable	y_C_center equal	${y_S_center}+2*${R_ef}
+variable	y_N_center equal	${y_C_center}+2*${R_ef}
+
+# particles at the center of spheres
+# a radius in which there has to be 1 particle since it is half lattice constant 
+variable cr equal 0.5*${l_0}
+region	part_W	sphere ${x_W_center} ${y_C_center} ${R_ef} ${cr}	units box
+region	part_C	sphere ${x_C_center} ${y_C_center} ${R_ef} ${cr} 	units box
+region	part_E	sphere ${x_E_center} ${y_C_center} ${R_ef} ${cr} 	units box
+region	part_S	sphere ${x_C_center} ${y_S_center} ${R_ef} ${cr} 	units box
+region	part_N	sphere ${x_C_center} ${y_N_center} ${R_ef} ${cr} 	units box
+
+
+##########################################################
+
+change_box	all boundary	p p s	remap
+#change_box	all boundary p p p 
+
+group           tlsph id >= 1	
+
+# molecules are named after cardinal points
+group	sphere_W	type 1
+group	sphere_C	type 2
+group	sphere_E	type 3
+group	sphere_S	type 4
+group	sphere_N	type 5
+
+
+####################################################################################################
+# INTERACTION PHYSICS / MATERIAL MODEL
+# One rubber ring is linear elastic, the other rubber ring is elastic-ideal plastic.
+# Contact forces between both rubber rings are used to realize physical contact.
+####################################################################################################
+pair_style     	hybrid/overlay	smd/tlsph smd/hertz 1.
+	
+pair_coeff	*${molecule_max_id}	*${molecule_max_id}	smd/hertz	${contact_stiffness}
+include 	${tlsph_pair_coeff_path}
+
+####################################################################################################
+# SETTING VELOCITIES
+####################################################################################################
+
+#velocity	sphere_W set -0.14 0.0 0. units box
+#velocity	sphere_E set -0.1 0.0 0. units box
+
+####################################################################################################
+# TIME INTEGRATION
+####################################################################################################
+
+
+fix             dtfix tlsph smd/adjust_dt 0.1 # dynamically adjust time increment every step
+fix             integration_fix tlsph smd/integrate_tlsph
+#every 5 timesteps, along direction x, simulation box is rescaled, reaching the 0.75 of its original length at at the end of the simulation.
+fix		deform_fix all deform 5 x scale 0.75 remap none 
+
+# Writing on file the eulerian data of all particles together - dump on line 163
+# size_rel is the initial input for the cell size as a fraction of the neighbourg list radius
+#variable size_rel equal 0.80*${l_0}/${h}
+#fix     f_euler  tlsph  ave/euler nevery ${dumpFreq} cell_size_relative ${size_rel}  parallel no
+
+# zeroizing the angular momentum for each SMD-molecule every 1 timestep
+fix		momentum_W	sphere_W	momentum 1 angular
+fix		momentum_E	sphere_E	momentum 1 angular
+fix		momentum_C	sphere_C	momentum 1 angular
+fix		momentum_S	sphere_S	momentum 1 angular
+fix		momentum_N	sphere_N	momentum 1 angular
+# Constraining the center of mass of each SMD-molecule to move along a certain axis
+fix		recenter_W	sphere_W	recenter	NULL INIT INIT
+fix		recenter_E	sphere_E	recenter	NULL INIT INIT
+fix		recenter_C	sphere_C	recenter	INIT INIT INIT
+fix		recenter_S	sphere_S	recenter	INIT NULL INIT
+fix		recenter_N	sphere_N	recenter	INIT NULL INIT
+
+run 0
+
+####################################################################################################
+# SPECIFY TRAJECTORY OUTPUT
+####################################################################################################
+
+compute         S all smd/tlsph/stress # Cauchy stress tensor
+#compute         nn all smd/tlsph/num/neighs # number of neighbors for each particle
+#compute         eint all smd/internal/energy
+#compute         alleint all reduce sum c_eint
+#variable        etot equal c_alleint+ke+pe
+
+#### Compute local contact forces
+compute contact all smd/force/interact fhx fhy fhz cutoff radius
+dump 1 all local ${dumpFreq2} ${dump_path}.contact_force.*.dat index c_contact[1] c_contact[2]  c_contact[3] 
+
+dump            dump_id tlsph custom ${dumpFreq} ${dump_path}.*.liggghts id type x y z vx vy vz fx fy fz fhx fhy fhz &
+                c_S[1] c_S[2] c_S[3] c_S[4] c_S[5] c_S[6] c_S[7]  # c_nn
+
+
+###	DUMP - EULER
+#dump            dump_euler all euler/vtk ${dumpFreq} ${dump_path}.euler.*.vtk 
+#dump_modify     dump_euler first yes
+
+# printing on file box size and boundaries
+fix	fix_print    all print ${dumpFreq2}  "$(step) $(xhi-xlo) $(yhi-ylo) $(zhi-zlo) $(xlo) $(xhi) $(ylo) $(yhi) $(zlo) $(zhi)" &
+	 file ${dump_path}.box_size.dat title "# step	Lx	Ly	Lz	xlo	xhi	ylo	yhi	zlo	zhi" screen no
+
+
+
+####################################################################################################
+# STATUS OUTPUT
+####################################################################################################
+thermo          ${dumpFreq}
+thermo_style    custom step dt f_dtfix ke pe 
+
+####################################################################################################
+run 80000
