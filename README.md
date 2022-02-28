@@ -24,16 +24,27 @@ more information about the code and its uses.
 The LAMMPS distribution includes the following files and directories:
 
 README                     this file
+
 LICENSE                    the GNU General Public License (GPL)
+
 bench                      benchmark problems
+
 cmake                      CMake build files
+
 doc                        documentation
+
 examples                   simple test problems
+
 fortran                    Fortran wrapper for LAMMPS
+
 lib                        additional provided or external libraries
+
 potentials                 interatomic potential files
+
 python                     Python wrappers for LAMMPS
+
 src                        source files
+
 tools                      pre- and post-processing tools
 
 Point your browser at any of these files to get started:
